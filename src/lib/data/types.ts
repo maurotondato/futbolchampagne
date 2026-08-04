@@ -1,0 +1,139 @@
+export type DominantFoot = "izquierda" | "derecha" | "ambidiestro";
+
+export type FieldPosition = "ARQ" | "DEF" | "MED" | "DEL";
+
+export interface FunnyAttributes {
+  aguante: number;
+  estadoFisico: number;
+  llegarTarde: number;
+  humo: number;
+  definicion: number;
+  quite: number;
+  pase: number;
+  iqFutbolistico: number;
+  protestaArbitro: number;
+  humor: number;
+  garra: number;
+  sangre: number;
+}
+
+export const DEFAULT_ATTRIBUTES: FunnyAttributes = {
+  aguante: 70,
+  estadoFisico: 70,
+  llegarTarde: 50,
+  humo: 50,
+  definicion: 70,
+  quite: 65,
+  pase: 68,
+  iqFutbolistico: 65,
+  protestaArbitro: 55,
+  humor: 75,
+  garra: 72,
+  sangre: 60,
+};
+
+export interface Player {
+  id: string;
+  name: string;
+  nickname?: string;
+  photoUrl?: string | null;
+  /** Número de WhatsApp en formato local AR (10 dígitos, sin 0 ni 15). */
+  phone?: string | null;
+  birthdate?: string | null;
+  dominantFoot: DominantFoot;
+  favoritePosition: FieldPosition;
+  debutDate?: string | null;
+  attributes: FunnyAttributes;
+  active: boolean;
+}
+
+export interface PlayerMatchStat {
+  playerId: string;
+  team: "A" | "B";
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  saves: number;
+  errors: number;
+  rating: number; // 1-10
+  isMvp: boolean;
+  isGoalkeeper: boolean;
+  minutesLate: number;
+}
+
+export interface LineupSlot {
+  playerId: string;
+  team: "A" | "B";
+  x: number; // percentage 0-100
+  y: number; // percentage 0-100
+}
+
+export type MatchStatus = "scheduled" | "played";
+
+export interface MatchMedia {
+  id: string;
+  matchId: string;
+  type: "gol" | "atajada" | "papelon";
+  url: string;
+  caption?: string;
+  votes: number;
+}
+
+export interface Match {
+  id: string;
+  date: string; // ISO date
+  teamAName: string;
+  teamBName: string;
+  teamAScore: number | null;
+  teamBScore: number | null;
+  status: MatchStatus;
+  mvpPlayerId?: string | null;
+  comments?: string;
+  lineup: LineupSlot[];
+  stats: PlayerMatchStat[];
+  media: MatchMedia[];
+}
+
+export type AwardType =
+  | "balon-de-oro"
+  | "revelacion"
+  | "peor-contratacion"
+  | "mejor-dupla"
+  | "gol-del-mes"
+  | "mas-puntual"
+  | "menos-puntual"
+  | "mas-vendido"
+  | "mas-termo"
+  | "mas-picante"
+  | "mas-tercer-tiempo";
+
+export interface Award {
+  id: string;
+  type: AwardType;
+  season: string;
+  playerId?: string;
+  playerIds?: string[]; // for duo awards
+  note?: string;
+}
+
+export interface PlayerSummary {
+  player: Player;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  mvps: number;
+  cleanSheets: number;
+  avgRating: number;
+  points: number;
+  elo: number;
+  winStreak: number;
+  loseStreak: number;
+  minutesPlayed: number;
+  timesLate: number;
+}
