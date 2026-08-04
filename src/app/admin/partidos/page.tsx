@@ -10,6 +10,7 @@ import { GlowButton } from "@/components/ui/GlowButton";
 import { AdminGate } from "@/components/admin/AdminGate";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
 import { formatDate } from "@/lib/utils";
+import { nextMatchISODate } from "@/lib/matchDay";
 
 export default function AdminPartidosPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function AdminPartidosPage() {
 
   async function handleNew() {
     const m = await addMatch({
-      date: new Date().toISOString().slice(0, 10),
+      date: nextMatchISODate(),
       teamAName: "Equipo Champagne",
       teamBName: "Equipo Fernet",
       teamAScore: null,

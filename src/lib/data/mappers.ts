@@ -109,8 +109,7 @@ export function lineupFromRow(row: any): LineupSlot {
   return {
     playerId: row.player_id,
     team: row.team,
-    x: Number(row.x),
-    y: Number(row.y),
+    slot: row.slot,
   };
 }
 

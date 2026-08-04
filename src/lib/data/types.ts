@@ -2,6 +2,10 @@ export type DominantFoot = "izquierda" | "derecha" | "ambidiestro";
 
 export type FieldPosition = "ARQ" | "DEF" | "MED" | "DEL";
 
+/** Posiciones fijas de la formación: 1 arquero, 3 defensores (lateral
+ * izquierdo, central, lateral derecho), 2 mediocampistas, 1 delantero. */
+export type SlotCode = "ARQ" | "LI" | "DFC" | "LD" | "MED1" | "MED2" | "DEL";
+
 export interface FunnyAttributes {
   aguante: number;
   estadoFisico: number;
@@ -65,8 +69,7 @@ export interface PlayerMatchStat {
 export interface LineupSlot {
   playerId: string;
   team: "A" | "B";
-  x: number; // percentage 0-100
-  y: number; // percentage 0-100
+  slot: SlotCode;
 }
 
 export type MatchStatus = "scheduled" | "played";

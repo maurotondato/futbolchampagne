@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import { withBasePath } from "@/lib/basePath";
+import { safeGet, safeSet } from "@/lib/safeStorage";
 
 type SoundName = "click" | "hover" | "whoosh" | "crowd" | "goal" | "select";
 
@@ -36,7 +37,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // localStorage is only available client-side, so this can't be derived during render.
-    const stored = window.localStorage.getItem("fc-sound-enabled");
+    const stored = safeGet("local", "fc-sound-enabled");
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored != null) setEnabled(stored === "1");
   }, []);
@@ -44,7 +45,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   const toggle = useCallback(() => {
     setEnabled((prev) => {
       const next = !prev;
-      window.localStorage.setItem("fc-sound-enabled", next ? "1" : "0");
+      safeSet("local", "fc-sound-enabled", next ? "1" : "0");
       return next;
     });
   }, []);

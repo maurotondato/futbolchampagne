@@ -1,5 +1,6 @@
 import type { Award, FunnyAttributes, Match, Player } from "./types";
 import { DEFAULT_ATTRIBUTES } from "./types";
+import { nextMatchISODate } from "@/lib/matchDay";
 
 function attrs(overrides: Partial<FunnyAttributes> = {}): FunnyAttributes {
   return { ...DEFAULT_ATTRIBUTES, ...overrides };
@@ -41,27 +42,27 @@ export const DEMO_PLAYERS: Player[] = [
 export const DEMO_MATCHES: Match[] = [
   {
     id: "m-proximo",
-    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+    date: nextMatchISODate(),
     teamAName: "Equipo Champagne",
     teamBName: "Equipo Fernet",
     teamAScore: null,
     teamBScore: null,
     status: "scheduled",
     lineup: [
-      { playerId: "p1", team: "A", x: 50, y: 92 },
-      { playerId: "p2", team: "A", x: 25, y: 75 },
-      { playerId: "p3", team: "A", x: 75, y: 75 },
-      { playerId: "p6", team: "A", x: 30, y: 55 },
-      { playerId: "p7", team: "A", x: 70, y: 55 },
-      { playerId: "p11", team: "A", x: 35, y: 30 },
-      { playerId: "p12", team: "A", x: 65, y: 30 },
-      { playerId: "p15", team: "B", x: 50, y: 8 },
-      { playerId: "p4", team: "B", x: 25, y: 25 },
-      { playerId: "p5", team: "B", x: 75, y: 25 },
-      { playerId: "p8", team: "B", x: 30, y: 45 },
-      { playerId: "p9", team: "B", x: 70, y: 45 },
-      { playerId: "p13", team: "B", x: 35, y: 70 },
-      { playerId: "p14", team: "B", x: 65, y: 70 },
+      { playerId: "p1", team: "A", slot: "ARQ" },
+      { playerId: "p2", team: "A", slot: "LI" },
+      { playerId: "p3", team: "A", slot: "DFC" },
+      { playerId: "p16", team: "A", slot: "LD" },
+      { playerId: "p6", team: "A", slot: "MED1" },
+      { playerId: "p7", team: "A", slot: "MED2" },
+      { playerId: "p11", team: "A", slot: "DEL" },
+      { playerId: "p15", team: "B", slot: "ARQ" },
+      { playerId: "p4", team: "B", slot: "LI" },
+      { playerId: "p5", team: "B", slot: "DFC" },
+      { playerId: "p20", team: "B", slot: "LD" },
+      { playerId: "p8", team: "B", slot: "MED1" },
+      { playerId: "p9", team: "B", slot: "MED2" },
+      { playerId: "p13", team: "B", slot: "DEL" },
     ],
     stats: [],
     media: [],

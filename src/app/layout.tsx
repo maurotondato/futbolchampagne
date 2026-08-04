@@ -3,6 +3,7 @@ import { Bebas_Neue, Rajdhani, Barlow } from "next/font/google";
 import "./globals.css";
 import { SoundProvider } from "@/components/ui/SoundProvider";
 import { PasswordGate } from "@/components/auth/PasswordGate";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const bebas = Bebas_Neue({
   variable: "--font-bebas",
@@ -42,9 +43,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${bebas.variable} ${rajdhani.variable} ${barlow.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-void text-ink">
-        <SoundProvider>
-          <PasswordGate>{children}</PasswordGate>
-        </SoundProvider>
+        <ErrorBoundary>
+          <SoundProvider>
+            <PasswordGate>{children}</PasswordGate>
+          </SoundProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
