@@ -58,7 +58,10 @@ export function MainMenu() {
       <header className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-4 pt-8 sm:px-6 sm:pt-12">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Crest size={54} />
+            <div className="relative">
+              <div className="absolute inset-0 -z-10 animate-pulse-glow rounded-full bg-gold/30 blur-xl" />
+              <Crest size={54} />
+            </div>
             <div>
               <p className="font-hud text-[11px] uppercase tracking-[0.35em] text-ink-faint">
                 Temporada 2026
