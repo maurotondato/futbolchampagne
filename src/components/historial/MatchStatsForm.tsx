@@ -85,7 +85,75 @@ export function MatchStatsForm({
         <TeamScore label={match.teamBName} value={scoreB} onChange={setScoreB} color="text-cyan" />
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-line">
+      {/* Tarjetas — celular: una tarjeta compacta por jugador, sin scroll horizontal */}
+      <div className="space-y-3 sm:hidden">
+        {participants.map(({ player, team }) => {
+          const stat = draft[player.id];
+          const isMvp = mvpId === player.id;
+          return (
+            <div
+              key={player.id}
+              className={cn(
+                "glass rounded-2xl border p-3",
+                isMvp ? "border-gold/60" : "border-line"
+              )}
+            >
+              <div className="mb-3 flex items-center gap-2.5">
+                <PlayerAvatar
+                  player={player}
+                  size={38}
+                  ring={team === "A" ? "border-gold/60" : "border-cyan/60"}
+                />
+                <span className="min-w-0 flex-1 truncate font-hud text-sm font-semibold text-ink">
+                  {player.nickname || player.name.split(" ")[0]}
+                </span>
+                <button
+                  onClick={() => setMvpId(player.id)}
+                  className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition",
+                    isMvp ? "border-gold bg-gold/20 text-gold" : "border-line text-ink-faint"
+                  )}
+                  aria-label="Marcar MVP"
+                >
+                  <Star size={16} fill={isMvp ? "currentColor" : "none"} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2">
+                <MiniField label="⚽ Gol" value={stat.goals} onChange={(v) => update(player.id, { goals: v })} />
+                <MiniField label="🅰️ Asist" value={stat.assists} onChange={(v) => update(player.id, { assists: v })} />
+                <MiniField label="🟨 Am." value={stat.yellowCards} max={2} onChange={(v) => update(player.id, { yellowCards: v })} />
+                <MiniField label="🟥 Roja" value={stat.redCards} max={1} onChange={(v) => update(player.id, { redCards: v })} />
+                <MiniField label="Ataj" value={stat.saves} disabled={!stat.isGoalkeeper} onChange={(v) => update(player.id, { saves: v })} />
+                <MiniField label="Error" value={stat.errors} onChange={(v) => update(player.id, { errors: v })} />
+                <MiniField label="Tarde" value={stat.minutesLate} onChange={(v) => update(player.id, { minutesLate: v })} />
+                <MiniField
+                  label="Nota"
+                  value={stat.rating}
+                  step={0.5}
+                  min={1}
+                  max={10}
+                  gold
+                  onChange={(v) => update(player.id, { rating: v })}
+                />
+              </div>
+
+              <label className="mt-3 flex items-center gap-2 font-hud text-xs text-ink-faint">
+                <input
+                  type="checkbox"
+                  checked={stat.isGoalkeeper}
+                  onChange={(e) => update(player.id, { isGoalkeeper: e.target.checked })}
+                  className="h-4 w-4 accent-cyan"
+                />
+                🧤 Jugó de arquero
+              </label>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Tabla — desde tablet */}
+      <div className="hidden overflow-x-auto rounded-2xl border border-line sm:block">
         <table className="w-full min-w-[820px] border-collapse text-left">
           <thead>
             <tr className="border-b border-line bg-white/5 font-hud text-[10px] uppercase tracking-wider text-ink-faint">
@@ -242,5 +310,45 @@ function NumCell({
         className="w-12 rounded-md border border-line bg-white/5 px-1 py-1 text-center outline-none focus:border-gold/50 disabled:opacity-30"
       />
     </td>
+  );
+}
+
+function MiniField({
+  label,
+  value,
+  onChange,
+  min = 0,
+  max = 20,
+  step = 1,
+  disabled,
+  gold,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  disabled?: boolean;
+  gold?: boolean;
+}) {
+  return (
+    <label className="flex flex-col items-center gap-1">
+      <span className="font-hud text-[9px] uppercase tracking-wide text-ink-faint">{label}</span>
+      <input
+        type="number"
+        inputMode="decimal"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(Math.max(min, Number(e.target.value)))}
+        className={cn(
+          "w-full rounded-lg border border-line bg-white/5 py-1.5 text-center font-hud text-sm outline-none focus:border-gold/50 disabled:opacity-30",
+          gold && "font-bold text-gold"
+        )}
+      />
+    </label>
   );
 }
