@@ -36,7 +36,7 @@ export function RankingList({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: Math.min(i * 0.04, 0.6) }}
         >
-          <Link href={`/jugadores/${row.player.id}`}>
+          <Link href={`/jugadores/perfil?id=${row.player.id}`}>
             <div
               className={cn(
                 "glass group relative flex items-center gap-3 overflow-hidden rounded-xl border border-line p-3 transition hover:border-gold/50",

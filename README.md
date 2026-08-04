@@ -14,7 +14,8 @@ automáticas y más.
 - **Supabase** (Postgres + Auth + Storage) como backend — opcional
 - **Recharts** para los gráficos de estadísticas
 - **html-to-image** para exportar la formación como imagen
-- Deploy pensado para **Vercel**
+- Export estático (`output: "export"`) — corre en **GitHub Pages** (con el
+  workflow ya incluido) o en **Vercel**, sin necesidad de servidor
 
 ## Empezar en local
 
@@ -85,7 +86,7 @@ src/
     ui/                   design system (glass, botones, avatar, etc.)
   lib/
     data/                 tipos, datos demo, cálculo de estadísticas, ELO
-    supabase/              clientes de Supabase (browser/server) + auth
+    supabase/              cliente de Supabase (browser) + auth
     cargadasPhrases.ts     banco de frases para las cargadas
     previa.ts               generador de la "simulación previa"
     whatsapp.ts              helper para links de wa.me
@@ -93,11 +94,48 @@ src/
 supabase/migrations/       esquema SQL completo con RLS y seed del plantel
 ```
 
-## Deploy en Vercel
+## Acceso con contraseña
 
-1. Subí el repo a GitHub.
-2. Importalo en [vercel.com/new](https://vercel.com/new).
-3. (Opcional) agregá las variables `NEXT_PUBLIC_SUPABASE_URL` y
-   `NEXT_PUBLIC_SUPABASE_ANON_KEY` en el proyecto de Vercel.
-4. Deploy. La app funciona perfecta desde el celular — pensada para
-   compartirse por WhatsApp.
+Antes de entrar, la app pide una contraseña compartida del grupo
+(`fulbito`, ver `src/components/auth/PasswordGate.tsx`). Es solo un filtro
+casual para que no entre cualquiera que encuentre el link — no es
+seguridad real (queda en el código del sitio), así que no la uses para
+nada sensible. Se guarda por dispositivo/navegador; desde ⚙ Configuración
+hay un botón "Bloquear ahora" para volver a pedirla. Para cambiarla, editá
+la constante `PASSWORD` en ese archivo.
+
+## Deploy
+
+La app es 100% estática (`output: "export"` en `next.config.ts` — no hay
+rutas de servidor, todo corre en el navegador con Zustand + Supabase
+opcional), así que funciona igual de bien en cualquiera de estas dos
+opciones:
+
+### GitHub Pages (recomendado, gratis, ya viene listo)
+
+Ya incluye el workflow [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml).
+Para activarlo:
+
+1. En el repo de GitHub: **Settings → Pages → Build and deployment → Source:
+   "GitHub Actions"**.
+2. Hacé push a `main` (o corré el workflow manualmente desde la pestaña
+   *Actions*). Cada push a `main` build y publica solo.
+3. El sitio queda en `https://<usuario>.github.io/<nombre-del-repo>/`.
+
+El workflow arma la app con `NEXT_PUBLIC_BASE_PATH=/<nombre-del-repo>`
+automáticamente, así que todos los links, imágenes, video y audio
+funcionan bien bajo esa subruta. Si en algún momento configurás Supabase,
+agregá los secrets `NEXT_PUBLIC_SUPABASE_URL` y
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` en **Settings → Secrets and variables →
+Actions** y sumalos como `env` al paso *Build static export* del workflow.
+
+### Vercel (alternativa)
+
+1. Importá el repo en [vercel.com/new](https://vercel.com/new).
+2. (Opcional) agregá las variables `NEXT_PUBLIC_SUPABASE_URL` y
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+3. Deploy — no hace falta tocar `NEXT_PUBLIC_BASE_PATH`, queda vacío y la
+   app sirve desde la raíz del dominio.
+
+En ambos casos la app funciona perfecta desde el celular — pensada para
+compartirse por WhatsApp.

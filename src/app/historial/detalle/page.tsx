@@ -1,8 +1,8 @@
 "use client";
 
-import { use, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Film } from "lucide-react";
 import { PageShell, TopBar } from "@/components/ui/PageShell";
 import { GlassPanel } from "@/components/ui/GlassPanel";
@@ -13,8 +13,8 @@ import { MatchStatsForm } from "@/components/historial/MatchStatsForm";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
 import { formatDate } from "@/lib/utils";
 
-export default function MatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+function MatchDetailContent() {
+  const id = useSearchParams().get("id") ?? "";
   const router = useRouter();
   const { loadAll, hydrated } = useHydrateStore();
   const players = useAppStore((s) => s.players);
@@ -101,5 +101,13 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
         </GlassPanel>
       </div>
     </PageShell>
+  );
+}
+
+export default function MatchDetailPage() {
+  return (
+    <Suspense fallback={<PageShell><p className="py-20 text-center font-hud text-ink-faint">Cargando…</p></PageShell>}>
+      <MatchDetailContent />
+    </Suspense>
   );
 }

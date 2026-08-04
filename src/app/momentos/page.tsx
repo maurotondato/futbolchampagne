@@ -44,7 +44,7 @@ function MomentosContent() {
       <TopBar
         title="Momentos"
         subtitle={match ? `${match.teamAName} vs ${match.teamBName}` : "Goles, atajadas y papelones"}
-        onBack={() => router.push(match ? `/historial/${match.id}` : "/")}
+        onBack={() => router.push(match ? `/historial/detalle?id=${match.id}` : "/")}
       />
       <div className="mx-auto max-w-5xl space-y-6 px-4 pb-16 pt-6 sm:px-6">
         {!hydrated ? (

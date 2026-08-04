@@ -33,7 +33,7 @@ export default function AdminPartidosPage() {
       teamBScore: null,
       status: "scheduled",
     });
-    router.push(`/historial/${m.id}`);
+    router.push(`/historial/detalle?id=${m.id}`);
   }
 
   return (
@@ -56,7 +56,7 @@ export default function AdminPartidosPage() {
             <div className="space-y-2">
               {sorted.map((m) => (
                 <GlassPanel key={m.id} className="flex items-center justify-between gap-3 p-3">
-                  <Link href={`/historial/${m.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                  <Link href={`/historial/detalle?id=${m.id}`} className="flex min-w-0 flex-1 items-center gap-3">
                     <div className="min-w-0">
                       <p className="truncate font-hud text-sm font-semibold text-ink">
                         {m.teamAName} vs {m.teamBName}

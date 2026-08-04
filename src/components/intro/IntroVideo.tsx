@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Volume2, VolumeX, SkipForward } from "lucide-react";
+import { withBasePath } from "@/lib/basePath";
 
 export function IntroVideo({ onDone }: { onDone: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -42,7 +43,7 @@ export function IntroVideo({ onDone }: { onDone: () => void }) {
           onDone();
         }}
       >
-        <source src="/video/intro.mp4" type="video/mp4" />
+        <source src={withBasePath("/video/intro.mp4")} type="video/mp4" />
       </video>
 
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.5)_0%,transparent_18%,transparent_82%,rgba(0,0,0,0.6)_100%)]" />

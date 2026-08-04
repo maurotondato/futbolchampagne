@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Crest } from "@/components/ui/Crest";
 import { initials, cn } from "@/lib/utils";
+import { withBasePath } from "@/lib/basePath";
 import type { Player } from "@/lib/data/types";
 import { cardFaceAttributes, computeOverall, tierFor, TIER_STYLES } from "@/lib/data/attributeMeta";
 
@@ -61,7 +62,7 @@ export function FifaCard({
             >
               {player.photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={player.photoUrl} alt={player.name} className="h-full w-full rounded-full object-cover" />
+                <img src={withBasePath(player.photoUrl)} alt={player.name} className="h-full w-full rounded-full object-cover" />
               ) : (
                 initials(player.name)
               )}

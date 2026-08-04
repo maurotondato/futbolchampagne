@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Volume2, VolumeX, ShieldCheck, Database, Trash2, Film, Music2 } from "lucide-react";
+import { Volume2, VolumeX, ShieldCheck, Database, Trash2, Film, Music2, Lock } from "lucide-react";
 import { PageShell, TopBar } from "@/components/ui/PageShell";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { GlowButton } from "@/components/ui/GlowButton";
@@ -18,6 +18,11 @@ export default function ConfiguracionPage() {
       return;
     }
     window.localStorage.removeItem("futbol-champagne-store");
+    window.location.reload();
+  }
+
+  function handleLock() {
+    window.localStorage.removeItem("fc-unlocked");
     window.location.reload();
   }
 
@@ -88,6 +93,19 @@ export default function ConfiguracionPage() {
             Colocá archivos cortos en <code className="rounded bg-white/10 px-1.5 py-0.5">public/audio/</code>{" "}
             (click, hover, whoosh, crowd, goal, select) para escuchar sonidos tipo videojuego.
           </p>
+        </GlassPanel>
+
+        <GlassPanel className="p-5">
+          <div className="mb-3 flex items-center gap-3">
+            <Lock className="text-ink-dim" size={20} />
+            <p className="font-hud text-sm font-semibold text-ink">Bloquear acceso</p>
+          </div>
+          <p className="mb-3 font-hud text-xs text-ink-faint">
+            Vuelve a pedir la contraseña del grupo en este dispositivo.
+          </p>
+          <GlowButton variant="ghost" onClick={handleLock} className="flex items-center gap-2">
+            <Lock size={15} /> Bloquear ahora
+          </GlowButton>
         </GlassPanel>
 
         <GlassPanel className="p-5">

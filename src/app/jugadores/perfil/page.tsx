@@ -1,7 +1,7 @@
 "use client";
 
-import { use, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Pencil, Check, Laugh, Phone } from "lucide-react";
 import { PageShell, TopBar } from "@/components/ui/PageShell";
@@ -29,8 +29,8 @@ const FOOT_LABEL: Record<string, string> = {
   ambidiestro: "Ambidiestro",
 };
 
-export default function PlayerProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+function PlayerProfileContent() {
+  const id = useSearchParams().get("id") ?? "";
   const router = useRouter();
   const { loadAll, hydrated } = useHydrateStore();
   const players = useAppStore((s) => s.players);
@@ -196,5 +196,13 @@ function Stat({ label, value }: { label: string; value: number }) {
       <p className="font-display text-2xl text-gold">{value}</p>
       <p className="font-hud text-[10px] uppercase tracking-wide text-ink-faint">{label}</p>
     </div>
+  );
+}
+
+export default function PlayerProfilePage() {
+  return (
+    <Suspense fallback={<PageShell><p className="py-20 text-center font-hud text-ink-faint">Cargando…</p></PageShell>}>
+      <PlayerProfileContent />
+    </Suspense>
   );
 }

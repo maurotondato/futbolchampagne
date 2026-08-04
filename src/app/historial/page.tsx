@@ -32,7 +32,7 @@ export default function HistorialPage() {
       teamBScore: null,
       status: "scheduled",
     });
-    router.push(`/historial/${m.id}`);
+    router.push(`/historial/detalle?id=${m.id}`);
   }
 
   return (
@@ -56,7 +56,7 @@ export default function HistorialPage() {
           <div className="space-y-2">
             {sorted.map((m, i) => (
               <motion.div key={m.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                <Link href={`/historial/${m.id}`}>
+                <Link href={`/historial/detalle?id=${m.id}`}>
                   <div className="glass flex items-center justify-between gap-3 rounded-xl border border-line p-4 transition hover:border-gold/50">
                     <div className="min-w-0">
                       <p className="truncate font-hud text-sm font-semibold text-ink">

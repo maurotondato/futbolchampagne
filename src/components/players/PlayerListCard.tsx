@@ -16,7 +16,7 @@ export function PlayerListCard({ player, index = 0 }: { player: Player; index?: 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.03, 0.5) }}
     >
-      <Link href={`/jugadores/${player.id}`}>
+      <Link href={`/jugadores/perfil?id=${player.id}`}>
         <motion.div
           whileHover={{ y: -4 }}
           className="glass group flex items-center gap-3 rounded-xl border border-line p-3 transition hover:border-gold/50"

@@ -1,4 +1,5 @@
 import { cn, initials } from "@/lib/utils";
+import { withBasePath } from "@/lib/basePath";
 import type { Player } from "@/lib/data/types";
 
 const GRADIENTS = [
@@ -55,7 +56,7 @@ export function PlayerAvatar({
       {player.photoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={player.photoUrl}
+          src={withBasePath(player.photoUrl)}
           alt={player.name}
           className="h-full w-full object-cover"
           draggable={false}

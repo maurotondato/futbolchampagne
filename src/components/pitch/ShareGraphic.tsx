@@ -2,6 +2,7 @@ import { forwardRef } from "react";
 import { Crest } from "@/components/ui/Crest";
 import { cssGradientFor } from "@/components/ui/PlayerAvatar";
 import { initials } from "@/lib/utils";
+import { withBasePath } from "@/lib/basePath";
 import { GROUP_NAME } from "@/lib/data/demoData";
 import type { LineupSlot, Match, Player } from "@/lib/data/types";
 
@@ -167,7 +168,7 @@ function Token({
       >
         {player.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={player.photoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src={withBasePath(player.photoUrl)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         ) : (
           initials(player.name)
         )}

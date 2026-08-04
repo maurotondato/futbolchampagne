@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { withBasePath } from "@/lib/basePath";
 
 type SoundName = "click" | "hover" | "whoosh" | "crowd" | "goal" | "select";
 
@@ -54,7 +55,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
       try {
         let audio = cache.current[name];
         if (!audio) {
-          audio = new Audio(SOUND_SRC[name]);
+          audio = new Audio(withBasePath(SOUND_SRC[name]));
           cache.current[name] = audio;
         }
         audio.volume = opts?.volume ?? 0.5;
