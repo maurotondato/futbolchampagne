@@ -8,6 +8,7 @@ import { GlowButton } from "@/components/ui/GlowButton";
 import { useSound } from "@/components/ui/SoundProvider";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { safeRemove } from "@/lib/safeStorage";
 
 export default function ConfiguracionPage() {
   const router = useRouter();
@@ -17,12 +18,12 @@ export default function ConfiguracionPage() {
     if (!confirm("Esto borra los datos guardados en este navegador (modo demo) y recarga la página. ¿Seguro?")) {
       return;
     }
-    window.localStorage.removeItem("futbol-champagne-store");
+    safeRemove("local", "futbol-champagne-store");
     window.location.reload();
   }
 
   function handleLock() {
-    window.localStorage.removeItem("fc-unlocked");
+    safeRemove("local", "fc-unlocked");
     window.location.reload();
   }
 

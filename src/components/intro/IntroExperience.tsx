@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { IntroVideo } from "./IntroVideo";
 import { LoadingScreen } from "./LoadingScreen";
+import { safeGet, safeSet } from "@/lib/safeStorage";
 
 type Stage = "boot" | "video" | "loading" | "reveal" | "done";
 
@@ -14,14 +15,14 @@ export function IntroExperience({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // sessionStorage is only available client-side, so this can't be derived during render.
-    const seen = window.sessionStorage.getItem(SEEN_KEY);
+    const seen = safeGet("session", SEEN_KEY);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setStage(seen ? "reveal" : "video");
   }, []);
 
   useEffect(() => {
     if (stage === "reveal") {
-      window.sessionStorage.setItem(SEEN_KEY, "1");
+      safeSet("session", SEEN_KEY, "1");
       const t = setTimeout(() => setStage("done"), 900);
       return () => clearTimeout(t);
     }

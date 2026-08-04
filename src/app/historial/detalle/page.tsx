@@ -11,7 +11,8 @@ import { PlayerToken } from "@/components/pitch/PlayerToken";
 import { ParticipantPicker } from "@/components/historial/ParticipantPicker";
 import { MatchStatsForm } from "@/components/historial/MatchStatsForm";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
+import { slotCoords } from "@/lib/formation";
 
 function MatchDetailContent() {
   const id = useSearchParams().get("id") ?? "";
@@ -59,12 +60,13 @@ function MatchDetailContent() {
               {match.lineup.map((slot) => {
                 const player = players.find((p) => p.id === slot.playerId);
                 if (!player) return null;
+                const { x, y } = slotCoords(slot.slot, slot.team);
                 return (
                   <PlayerToken
                     key={slot.playerId}
                     player={player}
-                    x={slot.x}
-                    y={slot.y}
+                    x={x}
+                    y={y}
                     team={slot.team}
                     pitchRef={pitchRef}
                     onMove={() => {}}
@@ -90,9 +92,15 @@ function MatchDetailContent() {
         </GlassPanel>
 
         <GlassPanel className="p-5">
-          <p className="mb-4 font-hud text-xs uppercase tracking-[0.25em] text-ink-faint">
+          <p className={cn("font-hud text-xs uppercase tracking-[0.25em] text-ink-faint", match.status === "played" && "mb-4")}>
             {match.status === "played" ? "Editar resultado y estadísticas" : "Cargar resultado y estadísticas"}
           </p>
+          {match.status !== "played" && (
+            <p className="mb-4 mt-1 font-hud text-xs text-ink-faint">
+              Se completa después del partido — normalmente al otro día — y ahí se arman solas la tabla y las
+              estadísticas.
+            </p>
+          )}
           {match.lineup.length === 0 ? (
             <ParticipantPicker matchId={match.id} players={players.filter((p) => p.active)} />
           ) : (

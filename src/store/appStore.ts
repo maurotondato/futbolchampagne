@@ -1,7 +1,8 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
+import { safeGet, safeSet, safeRemove } from "@/lib/safeStorage";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { DEMO_AWARDS, DEMO_MATCHES, DEMO_PLAYERS } from "@/lib/data/demoData";
 import type {
@@ -27,6 +28,18 @@ import {
 function uid(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
 }
+
+// zustand's default localStorage adapter doesn't guard against getItem/
+// setItem throwing (Safari private browsing, "block all cookies", etc.),
+// which otherwise surfaces as an uncaught error on every write. Route
+// through the same safe helpers used everywhere else in the app.
+const safeStateStorage: StateStorage = {
+  getItem: (name) => safeGet("local", name),
+  setItem: (name, value) => {
+    safeSet("local", name, value);
+  },
+  removeItem: (name) => safeRemove("local", name),
+};
 
 interface AppState {
   players: Player[];
@@ -170,28 +183,45 @@ export const useAppStore = create<AppState>()(
       },
 
       setLineupSlot: async (matchId, slot) => {
+        // Assigning a player bumps out whoever else was in that exact
+        // team+slot, and pulls the player out of any other slot they
+        // occupied — a player can only be in one spot at a time.
+        let bumpedPlayerId: string | null = null;
         set({
-          matches: get().matches.map((m) =>
-            m.id === matchId
-              ? {
-                  ...m,
-                  lineup: [
-                    ...m.lineup.filter((l) => l.playerId !== slot.playerId),
-                    slot,
-                  ],
-                }
-              : m
-          ),
+          matches: get().matches.map((m) => {
+            if (m.id !== matchId) return m;
+            const bumped = m.lineup.find(
+              (l) => l.team === slot.team && l.slot === slot.slot && l.playerId !== slot.playerId
+            );
+            bumpedPlayerId = bumped?.playerId ?? null;
+            return {
+              ...m,
+              lineup: [
+                ...m.lineup.filter(
+                  (l) =>
+                    l.playerId !== slot.playerId &&
+                    !(l.team === slot.team && l.slot === slot.slot)
+                ),
+                slot,
+              ],
+            };
+          }),
         });
         const sb = getSupabaseBrowserClient();
         if (sb) {
+          if (bumpedPlayerId) {
+            await sb
+              .from("lineup_slots")
+              .delete()
+              .eq("match_id", matchId)
+              .eq("player_id", bumpedPlayerId);
+          }
           await sb.from("lineup_slots").upsert(
             {
               match_id: matchId,
               player_id: slot.playerId,
               team: slot.team,
-              x: slot.x,
-              y: slot.y,
+              slot: slot.slot,
             },
             { onConflict: "match_id,player_id" }
           );
@@ -313,6 +343,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: "futbol-champagne-store",
+      storage: createJSONStorage(() => safeStateStorage),
       partialize: (state) => ({
         players: state.players,
         matches: state.matches,

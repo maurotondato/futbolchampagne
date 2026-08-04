@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Settings, ShieldCheck } from "lucide-react";
+import { Settings, ShieldCheck, AlertCircle } from "lucide-react";
 import { PanelCard } from "./PanelCard";
 import { Crest } from "@/components/ui/Crest";
 import { PageShell } from "@/components/ui/PageShell";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
 import { GROUP_NAME } from "@/lib/data/demoData";
 import { useSound } from "@/components/ui/SoundProvider";
+import { isAwaitingResult } from "@/lib/matchDay";
 
 const MENU_ITEMS = [
   { href: "/armar-partido", emoji: "⚽", title: "Armar Partido", subtitle: "Formaciones en vivo", accent: "emerald" as const, big: true },
@@ -50,6 +51,7 @@ export function MainMenu() {
     .sort((a, b) => a.date.localeCompare(b.date))[0];
 
   const countdown = next && now ? formatCountdown(next.date, now) : null;
+  const awaitingResult = next && isAwaitingResult(next.date, next.status) ? next : null;
 
   return (
     <PageShell className="grain">
@@ -90,25 +92,45 @@ export function MainMenu() {
           </div>
         </div>
 
-        {next && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line px-5 py-3"
-          >
-            <div className="flex items-center gap-3">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald" />
+        {awaitingResult ? (
+          <Link href={`/historial/detalle?id=${awaitingResult.id}`}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/50 bg-gold/10 px-5 py-3 transition hover:border-gold/70"
+            >
+              <div className="flex items-center gap-3">
+                <AlertCircle size={18} className="shrink-0 text-gold" />
+                <span className="font-hud text-xs uppercase tracking-[0.2em] text-gold">
+                  Falta cargar el resultado · {awaitingResult.teamAName} vs {awaitingResult.teamBName}
+                </span>
+              </div>
+              <span className="font-display text-lg tracking-wide text-gold">
+                Completar →
               </span>
-              <span className="font-hud text-xs uppercase tracking-[0.2em] text-ink-dim">
-                Próximo partido · {next.teamAName} vs {next.teamBName}
+            </motion.div>
+          </Link>
+        ) : (
+          next && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line px-5 py-3"
+            >
+              <div className="flex items-center gap-3">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald" />
+                </span>
+                <span className="font-hud text-xs uppercase tracking-[0.2em] text-ink-dim">
+                  Próximo partido · {next.teamAName} vs {next.teamBName}
+                </span>
+              </div>
+              <span className="font-display text-lg tracking-wide text-cyan text-glow-cyan">
+                {countdown}
               </span>
-            </div>
-            <span className="font-display text-lg tracking-wide text-cyan text-glow-cyan">
-              {countdown}
-            </span>
-          </motion.div>
+            </motion.div>
+          )
         )}
       </header>
 

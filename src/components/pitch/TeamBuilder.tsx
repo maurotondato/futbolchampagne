@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { Shuffle, Eraser, Pencil } from "lucide-react";
 import { Pitch } from "./Pitch";
-import { PlayerToken } from "./PlayerToken";
-import { BenchChip } from "./BenchChip";
+import { SlotCard } from "./SlotCard";
+import { SlotPicker } from "./SlotPicker";
 import { ShareFormationButton } from "./ShareFormationButton";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
-import { FORMATION_7, mirrorY } from "@/lib/formation";
+import { FORMATION_SLOTS, slotCoords } from "@/lib/formation";
+import { nextMatchISODate } from "@/lib/matchDay";
+import type { SlotCode } from "@/lib/data/types";
 
 export function TeamBuilder() {
   const { loadAll, hydrated } = useHydrateStore();
@@ -22,9 +23,8 @@ export function TeamBuilder() {
   const clearLineup = useAppStore((s) => s.clearLineup);
   const updateMatch = useAppStore((s) => s.updateMatch);
 
-  const pitchRef = useRef<HTMLDivElement>(null);
-  const [pendingTeam, setPendingTeam] = useState<Record<string, "A" | "B">>({});
   const [editingNames, setEditingNames] = useState(false);
+  const [picker, setPicker] = useState<{ team: "A" | "B"; slot: SlotCode } | null>(null);
   const creatingRef = useRef(false);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export function TeamBuilder() {
     if (!hydrated || match || creatingRef.current) return;
     creatingRef.current = true;
     addMatch({
-      date: new Date().toISOString().slice(0, 10),
+      date: nextMatchISODate(),
       teamAName: "Equipo Champagne",
       teamBName: "Equipo Fernet",
       teamAScore: null,
@@ -50,29 +50,9 @@ export function TeamBuilder() {
     });
   }, [hydrated, match, addMatch]);
 
-  const placedIds = useMemo(
-    () => new Set(match?.lineup.map((l) => l.playerId) ?? []),
-    [match]
-  );
-  const bench = players.filter((p) => p.active && !placedIds.has(p.id));
-
-  useEffect(() => {
-    // Merges newly-benched players into local staging state (which team they'll
-    // join when dropped) without clobbering picks the user already toggled.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPendingTeam((prev) => {
-      const next = { ...prev };
-      let changed = false;
-      bench.forEach((p, i) => {
-        if (!next[p.id]) {
-          next[p.id] = i % 2 === 0 ? "A" : "B";
-          changed = true;
-        }
-      });
-      return changed ? next : prev;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bench.length]);
+  const byId = useMemo(() => new Map(players.map((p) => [p.id, p])), [players]);
+  const activeCount = players.filter((p) => p.active).length;
+  const placedCount = match?.lineup.length ?? 0;
 
   if (!hydrated || !match) {
     return (
@@ -86,42 +66,39 @@ export function TeamBuilder() {
     if (!match) return;
     const matchId = match.id;
     const pool = players.filter((p) => p.active).sort(() => Math.random() - 0.5);
-    const teamA = pool.slice(0, 7);
-    const teamB = pool.slice(7, 14);
 
-    function assign(team: typeof teamA, side: "A" | "B") {
-      const slots = [...FORMATION_7];
+    function assign(team: "A" | "B", pool: typeof players) {
       const used = new Set<number>();
-      const byPos = new Map<string, number[]>();
-      slots.forEach((s, i) => {
-        byPos.set(s.pos, [...(byPos.get(s.pos) ?? []), i]);
-      });
-      const leftovers: typeof team = [];
-      team.forEach((player) => {
-        const candidates = byPos.get(player.favoritePosition) ?? [];
-        const idx = candidates.find((i) => !used.has(i));
-        if (idx !== undefined) {
+      const leftovers: typeof pool = [];
+      const picks: typeof pool = [];
+      pool.forEach((player) => {
+        const idx = FORMATION_SLOTS.findIndex(
+          (s, i) => s.pos === player.favoritePosition && !used.has(i)
+        );
+        if (idx !== -1) {
           used.add(idx);
-          const slot = slots[idx];
-          const y = side === "A" ? slot.y : mirrorY(slot.y);
-          setLineupSlot(matchId, { playerId: player.id, team: side, x: slot.x, y });
+          picks[idx] = player;
         } else {
           leftovers.push(player);
         }
       });
-      const freeSlots = slots.map((_, i) => i).filter((i) => !used.has(i));
+      const freeSlots = FORMATION_SLOTS.map((_, i) => i).filter((i) => !used.has(i));
       leftovers.forEach((player, k) => {
         const idx = freeSlots[k];
         if (idx === undefined) return;
-        const slot = slots[idx];
-        const y = side === "A" ? slot.y : mirrorY(slot.y);
-        setLineupSlot(matchId, { playerId: player.id, team: side, x: slot.x, y });
+        picks[idx] = player;
+      });
+      FORMATION_SLOTS.forEach((slotDef, i) => {
+        const player = picks[i];
+        if (player) setLineupSlot(matchId, { playerId: player.id, team, slot: slotDef.code });
       });
     }
 
-    assign(teamA, "A");
-    assign(teamB, "B");
+    assign("A", pool.slice(0, 7));
+    assign("B", pool.slice(7, 14));
   }
+
+  const occupiedIds = new Set(match.lineup.map((l) => l.playerId));
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
@@ -167,65 +144,57 @@ export function TeamBuilder() {
         </div>
       </div>
 
+      <GlassPanel className="mb-4 p-3 text-center">
+        <p className="font-hud text-xs uppercase tracking-[0.2em] text-ink-faint">
+          Tocá cualquier posición para asignar un jugador · {placedCount}/14 ubicados · {activeCount} en el plantel
+        </p>
+      </GlassPanel>
+
       <div className="mx-auto max-w-md sm:max-w-lg">
-        <Pitch ref={pitchRef}>
-          {match.lineup.map((slot) => {
-            const player = players.find((p) => p.id === slot.playerId);
-            if (!player) return null;
-            return (
-              <PlayerToken
-                key={`${slot.playerId}-${slot.x.toFixed(1)}-${slot.y.toFixed(1)}`}
-                player={player}
-                x={slot.x}
-                y={slot.y}
-                team={slot.team}
-                pitchRef={pitchRef}
-                onMove={(x, y) => setLineupSlot(match.id, { playerId: player.id, team: slot.team, x, y })}
-                onRemove={() => removeLineupSlot(match.id, player.id)}
-              />
-            );
-          })}
+        <Pitch>
+          {(["A", "B"] as const).flatMap((team) =>
+            FORMATION_SLOTS.map((slotDef) => {
+              const entry = match.lineup.find((l) => l.team === team && l.slot === slotDef.code);
+              const player = entry ? byId.get(entry.playerId) : undefined;
+              const { x, y } = slotCoords(slotDef.code, team);
+              return (
+                <SlotCard
+                  key={`${team}-${slotDef.code}`}
+                  x={x}
+                  y={y}
+                  team={team}
+                  label={slotDef.label}
+                  player={player}
+                  onClick={() => setPicker({ team, slot: slotDef.code })}
+                />
+              );
+            })
+          )}
         </Pitch>
       </div>
 
-      <GlassPanel className="mt-6 p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <p className="font-hud text-xs uppercase tracking-[0.25em] text-ink-faint">
-            Plantel disponible · arrastrá a la cancha
-          </p>
-          <p className="font-hud text-xs text-ink-faint">{bench.length} sin ubicar</p>
-        </div>
-        {bench.length === 0 ? (
-          <p className="py-6 text-center font-hud text-sm text-ink-faint">
-            Ya ubicaste a todo el plantel activo 🍾
-          </p>
-        ) : (
-          <motion.div layout className="flex gap-3 overflow-x-auto pb-2">
-            {bench.map((player) => (
-              <BenchChip
-                key={player.id}
-                player={player}
-                team={pendingTeam[player.id] ?? "A"}
-                onToggleTeam={() =>
-                  setPendingTeam((prev) => ({
-                    ...prev,
-                    [player.id]: prev[player.id] === "A" ? "B" : "A",
-                  }))
-                }
-                pitchRef={pitchRef}
-                onPlace={(x, y) =>
-                  setLineupSlot(match.id, {
-                    playerId: player.id,
-                    team: pendingTeam[player.id] ?? "A",
-                    x,
-                    y,
-                  })
-                }
-              />
-            ))}
-          </motion.div>
-        )}
-      </GlassPanel>
+      {picker && (
+        <SlotPicker
+          open={!!picker}
+          onClose={() => setPicker(null)}
+          slotCode={picker.slot}
+          team={picker.team}
+          players={players}
+          occupiedIds={occupiedIds}
+          currentPlayerId={
+            match.lineup.find((l) => l.team === picker.team && l.slot === picker.slot)?.playerId
+          }
+          onSelect={(playerId) => {
+            setLineupSlot(match.id, { playerId, team: picker.team, slot: picker.slot });
+            setPicker(null);
+          }}
+          onClear={() => {
+            const entry = match.lineup.find((l) => l.team === picker.team && l.slot === picker.slot);
+            if (entry) removeLineupSlot(match.id, entry.playerId);
+            setPicker(null);
+          }}
+        />
+      )}
     </div>
   );
 }

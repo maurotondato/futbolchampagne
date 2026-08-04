@@ -10,7 +10,7 @@ export default function ArmarPartidoPage() {
     <PageShell>
       <TopBar
         title="Armar Partido"
-        subtitle="7 vs 7 · Arrastrá y soltá"
+        subtitle="7 vs 7 · Tocá una posición"
         onBack={() => router.push("/")}
       />
       <div className="pt-6">

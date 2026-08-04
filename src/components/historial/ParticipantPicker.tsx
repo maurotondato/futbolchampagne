@@ -4,9 +4,30 @@ import { useState } from "react";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { useAppStore } from "@/store/appStore";
-import { FORMATION_7, mirrorY } from "@/lib/formation";
+import { FORMATION_SLOTS } from "@/lib/formation";
 import type { Player } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
+
+function assignSlots(team: Player[]) {
+  const used = new Set<number>();
+  const picks: (Player | undefined)[] = [];
+  const leftovers: Player[] = [];
+  team.forEach((player) => {
+    const idx = FORMATION_SLOTS.findIndex((s, i) => s.pos === player.favoritePosition && !used.has(i));
+    if (idx !== -1) {
+      used.add(idx);
+      picks[idx] = player;
+    } else {
+      leftovers.push(player);
+    }
+  });
+  const freeSlots = FORMATION_SLOTS.map((_, i) => i).filter((i) => !used.has(i));
+  leftovers.forEach((player, k) => {
+    const idx = freeSlots[k];
+    if (idx !== undefined) picks[idx] = player;
+  });
+  return picks;
+}
 
 export function ParticipantPicker({ matchId, players }: { matchId: string; players: Player[] }) {
   const setLineupSlot = useAppStore((s) => s.setLineupSlot);
@@ -22,13 +43,12 @@ export function ParticipantPicker({ matchId, players }: { matchId: string; playe
   function confirm() {
     const teamA = players.filter((p) => selection[p.id] === "A").slice(0, 7);
     const teamB = players.filter((p) => selection[p.id] === "B").slice(0, 7);
-    teamA.forEach((player, i) => {
-      const slot = FORMATION_7[i];
-      setLineupSlot(matchId, { playerId: player.id, team: "A", x: slot.x, y: slot.y });
+
+    assignSlots(teamA).forEach((player, i) => {
+      if (player) setLineupSlot(matchId, { playerId: player.id, team: "A", slot: FORMATION_SLOTS[i].code });
     });
-    teamB.forEach((player, i) => {
-      const slot = FORMATION_7[i];
-      setLineupSlot(matchId, { playerId: player.id, team: "B", x: slot.x, y: mirrorY(slot.y) });
+    assignSlots(teamB).forEach((player, i) => {
+      if (player) setLineupSlot(matchId, { playerId: player.id, team: "B", slot: FORMATION_SLOTS[i].code });
     });
   }
 
@@ -36,7 +56,8 @@ export function ParticipantPicker({ matchId, players }: { matchId: string; playe
     <div className="space-y-4">
       <p className="font-hud text-sm text-ink-dim">
         Este partido no tiene formación cargada. Elegí quiénes jugaron en cada equipo (tocá el nombre
-        una vez para Equipo A, dos para Equipo B).
+        una vez para Equipo A, dos para Equipo B) — las posiciones se asignan solas y después se pueden
+        ajustar desde &ldquo;Armar Partido&rdquo;.
       </p>
       <div className="flex flex-wrap gap-2">
         {players.map((p) => {

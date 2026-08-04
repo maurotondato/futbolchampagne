@@ -51,15 +51,17 @@ create table if not exists matches (
   updated_at timestamptz not null default now()
 );
 
--- Ubicación libre de cada jugador en la cancha (drag & drop)
+-- Posición fija de cada jugador dentro de la formación del equipo
 create table if not exists lineup_slots (
   id uuid primary key default gen_random_uuid(),
   match_id uuid not null references matches(id) on delete cascade,
   player_id uuid not null references players(id) on delete cascade,
   team text not null check (team in ('A', 'B')),
-  x numeric not null default 50,
-  y numeric not null default 50,
-  unique (match_id, player_id)
+  -- Formación fija: 1 arquero, 3 defensores (lateral izq., central, lateral
+  -- der.), 2 mediocampistas, 1 delantero.
+  slot text not null check (slot in ('ARQ', 'LI', 'DFC', 'LD', 'MED1', 'MED2', 'DEL')),
+  unique (match_id, player_id),
+  unique (match_id, team, slot)
 );
 
 -- Estadísticas de cada jugador en cada partido (se carga después del partido)

@@ -7,6 +7,7 @@ import { Crest } from "@/components/ui/Crest";
 import { ParticleField } from "@/components/ui/ParticleField";
 import { GROUP_NAME } from "@/lib/data/demoData";
 import { cn } from "@/lib/utils";
+import { safeGet, safeSet } from "@/lib/safeStorage";
 
 const STORAGE_KEY = "fc-unlocked";
 // Casual shared password for the group — this is a friendly "are you one of
@@ -21,13 +22,15 @@ export function PasswordGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUnlocked(window.localStorage.getItem(STORAGE_KEY) === "1");
+    setUnlocked(safeGet("local", STORAGE_KEY) === "1");
   }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (value.trim().toLowerCase() === PASSWORD) {
-      window.localStorage.setItem(STORAGE_KEY, "1");
+      // Unlock this session even if the browser refuses to persist it
+      // (private browsing / storage blocked) — just won't survive a reload.
+      safeSet("local", STORAGE_KEY, "1");
       setUnlocked(true);
     } else {
       setError(true);
