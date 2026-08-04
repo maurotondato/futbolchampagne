@@ -13,8 +13,9 @@ export function PageShell({
   return (
     <div className="relative min-h-dvh w-full overflow-x-hidden bg-void">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(53,226,226,0.09),transparent_55%),radial-gradient(ellipse_at_100%_100%,rgba(232,201,121,0.08),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(53,226,226,0.16),transparent_55%),radial-gradient(ellipse_at_100%_100%,rgba(232,201,121,0.14),transparent_50%),radial-gradient(ellipse_at_0%_60%,rgba(232,201,121,0.06),transparent_45%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#03050900,#030509_90%)]" />
+        <div className="grain absolute inset-0" />
         {particles && (
           <div className="absolute inset-0 opacity-70">
             <ParticleField density={45} />
