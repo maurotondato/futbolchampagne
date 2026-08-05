@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Star, Save, Share2, Minus, Plus } from "lucide-react";
+import { Star, Save, Minus, Plus } from "lucide-react";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
+import { ShareResultButton } from "@/components/pitch/ShareResultButton";
 import { useAppStore } from "@/store/appStore";
-import { whatsappLink } from "@/lib/whatsapp";
 import type { Match, Player, PlayerMatchStat } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
 
@@ -35,9 +35,11 @@ function defaultStat(playerId: string, team: "A" | "B", existing?: PlayerMatchSt
 export function MatchStatsForm({
   match,
   participants,
+  players,
 }: {
   match: Match;
   participants: { player: Player; team: "A" | "B" }[];
+  players: Player[];
 }) {
   const updateMatch = useAppStore((s) => s.updateMatch);
   const upsertStat = useAppStore((s) => s.upsertStat);
@@ -78,31 +80,12 @@ export function MatchStatsForm({
     setSaved(true);
   }
 
-  function shareMessage() {
-    const scorers = participants
-      .map(({ player }) => ({ player, goals: draft[player.id]?.goals ?? 0 }))
-      .filter((s) => s.goals > 0)
-      .map((s) => `⚽ ${s.player.nickname || s.player.name.split(" ")[0]}${s.goals > 1 ? ` x${s.goals}` : ""}`);
-    const mvpPlayer = participants.find(({ player }) => player.id === mvpId)?.player;
-    const late = participants
-      .filter(({ player }) => (draft[player.id]?.minutesLate ?? 0) > 0)
-      .map(({ player }) => player.nickname || player.name.split(" ")[0]);
-
-    const lines = [
-      `🍾⚽ ${match.teamAName} ${scoreA} - ${scoreB} ${match.teamBName}`,
-      ...(scorers.length ? ["", "Goles:", ...scorers] : []),
-      ...(mvpPlayer ? ["", `⭐ MVP: ${mvpPlayer.nickname || mvpPlayer.name}`] : []),
-      ...(late.length ? ["", `⏰ Llegaron tarde: ${late.join(", ")}`] : []),
-    ];
-    return lines.join("\n");
-  }
-
   return (
     <div className="space-y-6">
       <div className="glass flex items-center justify-center gap-6 rounded-2xl border border-line p-6">
-        <TeamScore label={match.teamAName} value={scoreA} onChange={setScoreA} color="text-gold" />
+        <TeamScore label={match.teamAName} value={scoreA} onChange={setScoreA} color="text-team-a" />
         <span className="font-display text-3xl text-ink-faint">—</span>
-        <TeamScore label={match.teamBName} value={scoreB} onChange={setScoreB} color="text-cyan" />
+        <TeamScore label={match.teamBName} value={scoreB} onChange={setScoreB} color="text-team-b" />
       </div>
 
       {/* Tarjetas — celular: una tarjeta compacta por jugador, sin scroll horizontal */}
@@ -122,7 +105,7 @@ export function MatchStatsForm({
                 <PlayerAvatar
                   player={player}
                   size={38}
-                  ring={team === "A" ? "border-gold/60" : "border-cyan/60"}
+                  ring={team === "A" ? "border-team-a/70" : "border-team-b/70"}
                 />
                 <span className="min-w-0 flex-1 truncate font-hud text-sm font-semibold text-ink">
                   {player.nickname || player.name.split(" ")[0]}
@@ -197,7 +180,7 @@ export function MatchStatsForm({
                 <tr key={player.id} className="border-b border-line/60 font-hud text-sm">
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">
-                      <PlayerAvatar player={player} size={30} ring={team === "A" ? "border-gold/60" : "border-cyan/60"} />
+                      <PlayerAvatar player={player} size={30} ring={team === "A" ? "border-team-a/70" : "border-team-b/70"} />
                       <span className="truncate">{player.nickname || player.name.split(" ")[0]}</span>
                     </div>
                   </td>
@@ -270,13 +253,7 @@ export function MatchStatsForm({
             >
               ✓ Guardado
             </motion.span>
-            <GlowButton
-              variant="cyan"
-              onClick={() => window.open(whatsappLink(shareMessage()), "_blank")}
-              className="flex items-center gap-2"
-            >
-              <Share2 size={16} /> Compartir por WhatsApp
-            </GlowButton>
+            <ShareResultButton match={match} players={players} />
           </>
         )}
       </div>

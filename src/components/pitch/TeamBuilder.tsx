@@ -109,13 +109,13 @@ export function TeamBuilder() {
               <input
                 defaultValue={match.teamAName}
                 onBlur={(e) => updateMatch(match.id, { teamAName: e.target.value })}
-                className="w-32 rounded-lg border border-line bg-white/5 px-2 py-1 font-hud text-sm text-gold outline-none focus:border-gold/60"
+                className="w-32 rounded-lg border border-line bg-white/5 px-2 py-1 font-hud text-sm text-team-a outline-none focus:border-team-a/60"
               />
               <span className="text-ink-faint">vs</span>
               <input
                 defaultValue={match.teamBName}
                 onBlur={(e) => updateMatch(match.id, { teamBName: e.target.value })}
-                className="w-32 rounded-lg border border-line bg-white/5 px-2 py-1 font-hud text-sm text-cyan outline-none focus:border-cyan/60"
+                className="w-32 rounded-lg border border-line bg-white/5 px-2 py-1 font-hud text-sm text-team-b outline-none focus:border-team-b/60"
               />
               <button onClick={() => setEditingNames(false)} className="text-xs text-ink-faint underline">
                 listo
@@ -126,9 +126,9 @@ export function TeamBuilder() {
               onClick={() => setEditingNames(true)}
               className="flex items-center gap-2 font-hud text-sm uppercase tracking-wide text-ink-dim hover:text-ink"
             >
-              <span className="text-gold">{match.teamAName}</span>
+              <span className="text-team-a">{match.teamAName}</span>
               <span className="text-ink-faint">vs</span>
-              <span className="text-cyan">{match.teamBName}</span>
+              <span className="text-team-b">{match.teamBName}</span>
               <Pencil size={13} className="opacity-50" />
             </button>
           )}

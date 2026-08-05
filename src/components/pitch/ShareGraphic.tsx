@@ -67,7 +67,7 @@ export const ShareGraphic = forwardRef<
 
       {/* Scoreboard */}
       <div style={{ position: "relative", margin: "8px 56px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 28px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.1)", background: "linear-gradient(160deg, rgba(255,255,255,0.06), rgba(0,0,0,0.15))" }}>
-        <TeamHeading name={match.teamAName} color="#e8c979" align="left" />
+        <TeamHeading name={match.teamAName} color="#ef4444" align="left" />
         <div style={{ textAlign: "center" }}>
           <div style={{ fontFamily: "var(--font-display), sans-serif", fontSize: 56, lineHeight: 1, color: "#fff" }}>
             {match.status === "played" ? `${match.teamAScore} - ${match.teamBScore}` : "VS"}
@@ -76,7 +76,7 @@ export const ShareGraphic = forwardRef<
             {match.status === "played" ? "Resultado final" : "Resultado pendiente"}
           </div>
         </div>
-        <TeamHeading name={match.teamBName} color="#35e2e2" align="right" />
+        <TeamHeading name={match.teamBName} color="#3a7bff" align="right" />
       </div>
 
       {/* Pitch */}
@@ -95,10 +95,10 @@ export const ShareGraphic = forwardRef<
       >
         <PitchLines />
         {teamA.map((slot) => (
-          <Token key={slot.playerId} slot={slot} player={byId.get(slot.playerId)} color="#e8c979" />
+          <Token key={slot.playerId} slot={slot} player={byId.get(slot.playerId)} color="#ef4444" />
         ))}
         {teamB.map((slot) => (
-          <Token key={slot.playerId} slot={slot} player={byId.get(slot.playerId)} color="#35e2e2" />
+          <Token key={slot.playerId} slot={slot} player={byId.get(slot.playerId)} color="#3a7bff" />
         ))}
       </div>
 
