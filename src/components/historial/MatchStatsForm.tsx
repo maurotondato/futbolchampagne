@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Star, Save, Share2 } from "lucide-react";
+import { Star, Save, Share2, Minus, Plus } from "lucide-react";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { useAppStore } from "@/store/appStore";
@@ -139,7 +139,7 @@ export function MatchStatsForm({
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="flex flex-wrap justify-center gap-x-2 gap-y-3">
                 <MiniField label="⚽ Goles" value={stat.goals} onChange={(v) => update(player.id, { goals: v })} />
                 <MiniField label="⏰ Tarde (min)" value={stat.minutesLate} onChange={(v) => update(player.id, { minutesLate: v })} />
                 <MiniField
@@ -163,7 +163,7 @@ export function MatchStatsForm({
                 🧤 Jugó de arquero
               </label>
               {stat.isGoalkeeper && (
-                <div className="mt-2 w-1/3">
+                <div className="mt-2 flex justify-center">
                   <MiniField
                     label="🥅 En contra"
                     value={stat.goalsAgainst}
@@ -178,7 +178,7 @@ export function MatchStatsForm({
 
       {/* Tabla — desde tablet */}
       <div className="hidden overflow-x-auto rounded-2xl border border-line sm:block">
-        <table className="w-full min-w-[560px] border-collapse text-left">
+        <table className="w-full min-w-[680px] border-collapse text-left">
           <thead>
             <tr className="border-b border-line bg-white/5 font-hud text-[10px] uppercase tracking-wider text-ink-faint">
               <th className="px-3 py-2">Jugador</th>
@@ -216,17 +216,14 @@ export function MatchStatsForm({
                     onChange={(v) => update(player.id, { goalsAgainst: v })}
                     disabled={!stat.isGoalkeeper}
                   />
-                  <td className="px-2 py-2">
-                    <input
-                      type="number"
-                      min={1}
-                      max={10}
-                      step={0.1}
-                      value={stat.rating}
-                      onChange={(e) => update(player.id, { rating: Number(e.target.value) })}
-                      className="w-14 rounded-md border border-line bg-white/5 px-1.5 py-1 text-center outline-none focus:border-gold/50"
-                    />
-                  </td>
+                  <NumCell
+                    value={stat.rating}
+                    onChange={(v) => update(player.id, { rating: v })}
+                    min={1}
+                    max={10}
+                    step={0.5}
+                    width="w-14"
+                  />
                   <td className="px-2 py-2 text-center">
                     <button
                       onClick={() => setMvpId(player.id)}
@@ -287,6 +284,33 @@ export function MatchStatsForm({
   );
 }
 
+function StepButton({
+  onClick,
+  disabled,
+  children,
+  size = "sm",
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+  size?: "sm" | "lg";
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      tabIndex={-1}
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-full border border-line bg-white/5 text-ink-dim transition hover:border-gold/50 hover:text-gold active:scale-90 disabled:opacity-20 disabled:hover:border-line disabled:hover:text-ink-dim",
+        size === "sm" ? "h-6 w-6" : "h-9 w-9"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 function TeamScore({
   label,
   value,
@@ -301,13 +325,23 @@ function TeamScore({
   return (
     <div className="text-center">
       <p className={cn("font-hud text-xs uppercase tracking-wide", color)}>{label}</p>
-      <input
-        type="number"
-        min={0}
-        value={value}
-        onChange={(e) => onChange(Math.max(0, Number(e.target.value)))}
-        className="mt-1 w-16 rounded-lg border border-line bg-white/5 py-1 text-center font-display text-3xl text-ink outline-none focus:border-gold/50"
-      />
+      <div className="mt-1 flex items-center gap-1.5">
+        <StepButton size="lg" onClick={() => onChange(Math.max(0, value - 1))} disabled={value <= 0}>
+          <Minus size={16} />
+        </StepButton>
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          value={value}
+          onFocus={(e) => e.target.select()}
+          onChange={(e) => onChange(Math.max(0, Number(e.target.value)))}
+          className="w-14 rounded-lg border border-line bg-white/5 py-1 text-center font-display text-3xl text-ink outline-none focus:border-gold/50"
+        />
+        <StepButton size="lg" onClick={() => onChange(value + 1)}>
+          <Plus size={16} />
+        </StepButton>
+      </div>
     </div>
   );
 }
@@ -315,25 +349,45 @@ function TeamScore({
 function NumCell({
   value,
   onChange,
+  min = 0,
   max = 20,
+  step = 1,
   disabled,
+  width = "w-10",
 }: {
   value: number;
   onChange: (v: number) => void;
+  min?: number;
   max?: number;
+  step?: number;
   disabled?: boolean;
+  width?: string;
 }) {
   return (
-    <td className="px-2 py-2 text-center">
-      <input
-        type="number"
-        min={0}
-        max={max}
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(Math.max(0, Number(e.target.value)))}
-        className="w-12 rounded-md border border-line bg-white/5 px-1 py-1 text-center outline-none focus:border-gold/50 disabled:opacity-30"
-      />
+    <td className="px-2 py-2">
+      <div className="flex items-center justify-center gap-1">
+        <StepButton onClick={() => onChange(Math.max(min, +(value - step).toFixed(2)))} disabled={disabled || value <= min}>
+          <Minus size={11} />
+        </StepButton>
+        <input
+          type="number"
+          inputMode="decimal"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          disabled={disabled}
+          onFocus={(e) => e.target.select()}
+          onChange={(e) => onChange(Math.max(min, Number(e.target.value)))}
+          className={cn(
+            "rounded-md border border-line bg-white/5 px-1 py-1 text-center outline-none focus:border-gold/50 disabled:opacity-30",
+            width
+          )}
+        />
+        <StepButton onClick={() => onChange(Math.min(max, +(value + step).toFixed(2)))} disabled={disabled || value >= max}>
+          <Plus size={11} />
+        </StepButton>
+      </div>
     </td>
   );
 }
@@ -358,22 +412,31 @@ function MiniField({
   gold?: boolean;
 }) {
   return (
-    <label className="flex flex-col items-center gap-1">
+    <div className="flex flex-col items-center gap-1">
       <span className="font-hud text-[9px] uppercase tracking-wide text-ink-faint">{label}</span>
-      <input
-        type="number"
-        inputMode="decimal"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(Math.max(min, Number(e.target.value)))}
-        className={cn(
-          "w-full rounded-lg border border-line bg-white/5 py-1.5 text-center font-hud text-sm outline-none focus:border-gold/50 disabled:opacity-30",
-          gold && "font-bold text-gold"
-        )}
-      />
-    </label>
+      <div className="flex items-center gap-1">
+        <StepButton onClick={() => onChange(Math.max(min, +(value - step).toFixed(2)))} disabled={disabled || value <= min}>
+          <Minus size={12} />
+        </StepButton>
+        <input
+          type="number"
+          inputMode="decimal"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          disabled={disabled}
+          onFocus={(e) => e.target.select()}
+          onChange={(e) => onChange(Math.max(min, Number(e.target.value)))}
+          className={cn(
+            "w-10 rounded-lg border border-line bg-white/5 py-1.5 text-center font-hud text-sm outline-none focus:border-gold/50 disabled:opacity-30",
+            gold && "font-bold text-gold"
+          )}
+        />
+        <StepButton onClick={() => onChange(Math.min(max, +(value + step).toFixed(2)))} disabled={disabled || value >= max}>
+          <Plus size={12} />
+        </StepButton>
+      </div>
+    </div>
   );
 }

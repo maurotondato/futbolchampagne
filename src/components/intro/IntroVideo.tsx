@@ -8,7 +8,9 @@ import { withBasePath } from "@/lib/basePath";
 export function IntroVideo({ onDone }: { onDone: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasSource, setHasSource] = useState(true);
-  const [muted, setMuted] = useState(true);
+  // Starts unmuted on purpose — this plays right after the password-gate
+  // click, a genuine user gesture, so browsers generally allow audio.
+  const [muted, setMuted] = useState(false);
   const doneRef = useRef(false);
 
   function finish() {
@@ -27,6 +29,16 @@ export function IntroVideo({ onDone }: { onDone: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    // Imperative play (instead of the autoPlay attribute) so a rejected
+    // unmuted attempt can fall back to muted playback instead of just
+    // leaving the video paused/black. Re-runs when `muted` flips, which
+    // covers both this fallback and the manual toggle button below.
+    videoRef.current?.play().catch(() => {
+      if (!muted) setMuted(true);
+    });
+  }, [muted]);
+
   if (!hasSource) return null;
 
   return (
@@ -38,7 +50,6 @@ export function IntroVideo({ onDone }: { onDone: () => void }) {
     >
       <video
         ref={videoRef}
-        autoPlay
         muted={muted}
         playsInline
         className="h-full w-full object-cover"

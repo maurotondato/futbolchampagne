@@ -40,8 +40,8 @@ create table if not exists players (
 create table if not exists matches (
   id uuid primary key default gen_random_uuid(),
   date date not null,
-  team_a_name text not null default 'Equipo Champagne',
-  team_b_name text not null default 'Equipo Fernet',
+  team_a_name text not null default 'Equipo Rojo',
+  team_b_name text not null default 'Equipo Azul',
   team_a_score int,
   team_b_score int,
   status text not null default 'scheduled' check (status in ('scheduled', 'played')),

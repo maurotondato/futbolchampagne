@@ -40,8 +40,8 @@ export function TeamBuilder() {
     creatingRef.current = true;
     addMatch({
       date: nextMatchISODate(),
-      teamAName: "Equipo Champagne",
-      teamBName: "Equipo Fernet",
+      teamAName: "Equipo Rojo",
+      teamBName: "Equipo Azul",
       teamAScore: null,
       teamBScore: null,
       status: "scheduled",
