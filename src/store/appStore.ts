@@ -47,6 +47,20 @@ function isTuesday(dateIso: string) {
   return new Date(`${dateIso}T12:00:00`).getDay() === 2;
 }
 
+// Every write below used to fire the Supabase call and ignore whatever it
+// returned, applying the local optimistic update unconditionally. If the
+// server write actually failed (RLS, network, whatever), nothing told the
+// user — the change just looked like it worked until the next reload
+// re-fetched server truth and quietly reverted it. Writes now check the
+// server first and only touch local state on success, and this surfaces
+// the failure instead of swallowing it.
+function reportWriteError(action: string, error: { message?: string } | null): boolean {
+  if (!error) return false;
+  console.error(`[Supabase] ${action} failed:`, error);
+  alert(`No se pudo ${action}. ${error.message ?? "Revisá la conexión e intentá de nuevo."}`);
+  return true;
+}
+
 // Repairs state saved by older app versions: lineup slots used to store
 // free x/y coordinates instead of a fixed SlotCode (invalid slot values
 // crash the share-image and match-detail pitch renders), and the "next
@@ -164,24 +178,31 @@ export const useAppStore = create<AppState>()(
             .insert(playerToRow(p))
             .select()
             .single();
-          if (!error && data) player = playerFromRow(data);
+          if (reportWriteError("agregar el jugador", error)) throw error;
+          if (data) player = playerFromRow(data);
         }
         set({ players: [...get().players, player] });
         return player;
       },
 
       updatePlayer: async (id, patch) => {
+        const sb = getSupabaseBrowserClient();
+        if (sb) {
+          const { error } = await sb.from("players").update(playerToRow(patch)).eq("id", id);
+          if (reportWriteError("actualizar el jugador", error)) return;
+        }
         set({
           players: get().players.map((pl) => (pl.id === id ? { ...pl, ...patch, attributes: { ...pl.attributes, ...(patch.attributes ?? {}) } } : pl)),
         });
-        const sb = getSupabaseBrowserClient();
-        if (sb) await sb.from("players").update(playerToRow(patch)).eq("id", id);
       },
 
       deletePlayer: async (id) => {
-        set({ players: get().players.filter((p) => p.id !== id) });
         const sb = getSupabaseBrowserClient();
-        if (sb) await sb.from("players").delete().eq("id", id);
+        if (sb) {
+          const { error } = await sb.from("players").delete().eq("id", id);
+          if (reportWriteError("borrar el jugador", error)) return;
+        }
+        set({ players: get().players.filter((p) => p.id !== id) });
       },
 
       addMatch: async (m) => {
@@ -193,40 +214,65 @@ export const useAppStore = create<AppState>()(
             .insert(matchToRow(m))
             .select()
             .single();
-          if (!error && data) match = matchFromRow(data, [], [], []);
+          if (reportWriteError("crear el partido", error)) throw error;
+          if (data) match = matchFromRow(data, [], [], []);
         }
         set({ matches: [match, ...get().matches] });
         return match;
       },
 
       updateMatch: async (id, patch) => {
+        const sb = getSupabaseBrowserClient();
+        if (sb && Object.keys(matchToRow(patch)).length) {
+          const { error } = await sb.from("matches").update(matchToRow(patch)).eq("id", id);
+          if (reportWriteError("actualizar el partido", error)) return;
+        }
         set({
           matches: get().matches.map((m) => (m.id === id ? { ...m, ...patch } : m)),
         });
-        const sb = getSupabaseBrowserClient();
-        if (sb && Object.keys(matchToRow(patch)).length) {
-          await sb.from("matches").update(matchToRow(patch)).eq("id", id);
-        }
       },
 
       deleteMatch: async (id) => {
-        set({ matches: get().matches.filter((m) => m.id !== id) });
         const sb = getSupabaseBrowserClient();
-        if (sb) await sb.from("matches").delete().eq("id", id);
+        if (sb) {
+          const { error } = await sb.from("matches").delete().eq("id", id);
+          if (reportWriteError("borrar el partido", error)) return;
+        }
+        set({ matches: get().matches.filter((m) => m.id !== id) });
       },
 
       setLineupSlot: async (matchId, slot) => {
         // Assigning a player bumps out whoever else was in that exact
         // team+slot, and pulls the player out of any other slot they
         // occupied — a player can only be in one spot at a time.
-        let bumpedPlayerId: string | null = null;
+        const currentMatch = get().matches.find((m) => m.id === matchId);
+        const bumped = currentMatch?.lineup.find(
+          (l) => l.team === slot.team && l.slot === slot.slot && l.playerId !== slot.playerId
+        );
+        const sb = getSupabaseBrowserClient();
+        if (sb) {
+          if (bumped) {
+            const { error } = await sb
+              .from("lineup_slots")
+              .delete()
+              .eq("match_id", matchId)
+              .eq("player_id", bumped.playerId);
+            if (reportWriteError("actualizar la formación", error)) return;
+          }
+          const { error } = await sb.from("lineup_slots").upsert(
+            {
+              match_id: matchId,
+              player_id: slot.playerId,
+              team: slot.team,
+              slot: slot.slot,
+            },
+            { onConflict: "match_id,player_id" }
+          );
+          if (reportWriteError("actualizar la formación", error)) return;
+        }
         set({
           matches: get().matches.map((m) => {
             if (m.id !== matchId) return m;
-            const bumped = m.lineup.find(
-              (l) => l.team === slot.team && l.slot === slot.slot && l.playerId !== slot.playerId
-            );
-            bumpedPlayerId = bumped?.playerId ?? null;
             return {
               ...m,
               lineup: [
@@ -240,28 +286,18 @@ export const useAppStore = create<AppState>()(
             };
           }),
         });
-        const sb = getSupabaseBrowserClient();
-        if (sb) {
-          if (bumpedPlayerId) {
-            await sb
-              .from("lineup_slots")
-              .delete()
-              .eq("match_id", matchId)
-              .eq("player_id", bumpedPlayerId);
-          }
-          await sb.from("lineup_slots").upsert(
-            {
-              match_id: matchId,
-              player_id: slot.playerId,
-              team: slot.team,
-              slot: slot.slot,
-            },
-            { onConflict: "match_id,player_id" }
-          );
-        }
       },
 
       removeLineupSlot: async (matchId, playerId) => {
+        const sb = getSupabaseBrowserClient();
+        if (sb) {
+          const { error } = await sb
+            .from("lineup_slots")
+            .delete()
+            .eq("match_id", matchId)
+            .eq("player_id", playerId);
+          if (reportWriteError("actualizar la formación", error)) return;
+        }
         set({
           matches: get().matches.map((m) =>
             m.id === matchId
@@ -269,25 +305,27 @@ export const useAppStore = create<AppState>()(
               : m
           ),
         });
-        const sb = getSupabaseBrowserClient();
-        if (sb) {
-          await sb
-            .from("lineup_slots")
-            .delete()
-            .eq("match_id", matchId)
-            .eq("player_id", playerId);
-        }
       },
 
       clearLineup: async (matchId) => {
+        const sb = getSupabaseBrowserClient();
+        if (sb) {
+          const { error } = await sb.from("lineup_slots").delete().eq("match_id", matchId);
+          if (reportWriteError("vaciar la cancha", error)) return;
+        }
         set({
           matches: get().matches.map((m) => (m.id === matchId ? { ...m, lineup: [] } : m)),
         });
-        const sb = getSupabaseBrowserClient();
-        if (sb) await sb.from("lineup_slots").delete().eq("match_id", matchId);
       },
 
       upsertStat: async (matchId, stat) => {
+        const sb = getSupabaseBrowserClient();
+        if (sb) {
+          const { error } = await sb
+            .from("player_match_stats")
+            .upsert(statToRow(matchId, stat), { onConflict: "match_id,player_id" });
+          if (reportWriteError("guardar la estadística", error)) return;
+        }
         set({
           matches: get().matches.map((m) =>
             m.id === matchId
@@ -301,12 +339,6 @@ export const useAppStore = create<AppState>()(
               : m
           ),
         });
-        const sb = getSupabaseBrowserClient();
-        if (sb) {
-          await sb
-            .from("player_match_stats")
-            .upsert(statToRow(matchId, stat), { onConflict: "match_id,player_id" });
-        }
       },
 
       addMedia: async (matchId, media) => {
@@ -318,7 +350,8 @@ export const useAppStore = create<AppState>()(
             .insert({ match_id: matchId, type: media.type, url: media.url, caption: media.caption })
             .select()
             .single();
-          if (!error && data) newMedia = mediaFromRow(data);
+          if (reportWriteError("subir el momento", error)) throw error;
+          if (data) newMedia = mediaFromRow(data);
         }
         set({
           matches: get().matches.map((m) =>
@@ -328,24 +361,27 @@ export const useAppStore = create<AppState>()(
       },
 
       voteMedia: async (matchId, mediaId, delta) => {
+        const match = get().matches.find((m) => m.id === matchId);
+        const media = match?.media.find((med) => med.id === mediaId);
+        if (!media) return;
+        const newVotes = media.votes + delta;
+        const sb = getSupabaseBrowserClient();
+        if (sb) {
+          const { error } = await sb.from("match_media").update({ votes: newVotes }).eq("id", mediaId);
+          if (reportWriteError("votar", error)) return;
+        }
         set({
           matches: get().matches.map((m) =>
             m.id === matchId
               ? {
                   ...m,
                   media: m.media.map((med) =>
-                    med.id === mediaId ? { ...med, votes: med.votes + delta } : med
+                    med.id === mediaId ? { ...med, votes: newVotes } : med
                   ),
                 }
               : m
           ),
         });
-        const sb = getSupabaseBrowserClient();
-        if (sb) {
-          const match = get().matches.find((m) => m.id === matchId);
-          const media = match?.media.find((med) => med.id === mediaId);
-          if (media) await sb.from("match_media").update({ votes: media.votes }).eq("id", mediaId);
-        }
       },
 
       addAward: async (a) => {
@@ -363,15 +399,19 @@ export const useAppStore = create<AppState>()(
             })
             .select()
             .single();
-          if (!error && data) award = awardFromRow(data);
+          if (reportWriteError("agregar el premio", error)) throw error;
+          if (data) award = awardFromRow(data);
         }
         set({ awards: [...get().awards, award] });
       },
 
       deleteAward: async (id) => {
-        set({ awards: get().awards.filter((a) => a.id !== id) });
         const sb = getSupabaseBrowserClient();
-        if (sb) await sb.from("awards").delete().eq("id", id);
+        if (sb) {
+          const { error } = await sb.from("awards").delete().eq("id", id);
+          if (reportWriteError("borrar el premio", error)) return;
+        }
+        set({ awards: get().awards.filter((a) => a.id !== id) });
       },
     }),
     {

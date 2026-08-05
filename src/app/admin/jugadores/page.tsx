@@ -174,9 +174,16 @@ function PlayerRow({
       <input
         type="date"
         defaultValue={player.birthdate ?? ""}
-        onBlur={(e) => onUpdate(player.id, { birthdate: e.target.value })}
+        onBlur={(e) => onUpdate(player.id, { birthdate: e.target.value || null })}
         className="rounded-lg border border-line bg-white/5 px-2 py-1.5 font-hud text-xs outline-none focus:border-gold/50"
         title="Fecha de nacimiento"
+      />
+      <input
+        type="date"
+        defaultValue={player.debutDate ?? ""}
+        onBlur={(e) => onUpdate(player.id, { debutDate: e.target.value || null })}
+        className="rounded-lg border border-line bg-white/5 px-2 py-1.5 font-hud text-xs outline-none focus:border-gold/50"
+        title="Fecha de debut"
       />
       <label className="flex items-center gap-1.5 font-hud text-xs text-ink-faint">
         <input
