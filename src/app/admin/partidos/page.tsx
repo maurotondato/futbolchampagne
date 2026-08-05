@@ -28,8 +28,8 @@ export default function AdminPartidosPage() {
   async function handleNew() {
     const m = await addMatch({
       date: nextMatchISODate(),
-      teamAName: "Equipo Champagne",
-      teamBName: "Equipo Fernet",
+      teamAName: "Equipo Rojo",
+      teamBName: "Equipo Azul",
       teamAScore: null,
       teamBScore: null,
       status: "scheduled",

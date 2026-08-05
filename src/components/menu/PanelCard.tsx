@@ -9,10 +9,9 @@ import type { LucideIcon } from "lucide-react";
 
 interface PanelCardProps {
   href: string;
-  emoji: string;
+  icon: LucideIcon;
   title: string;
   subtitle: string;
-  icon?: LucideIcon;
   accent?: "gold" | "cyan" | "magenta" | "emerald";
   big?: boolean;
   index?: number;
@@ -20,33 +19,37 @@ interface PanelCardProps {
 
 const ACCENTS: Record<
   NonNullable<PanelCardProps["accent"]>,
-  { ring: string; glow: string; text: string }
+  { ring: string; glow: string; text: string; iconBg: string }
 > = {
   gold: {
     ring: "group-hover:border-gold/70",
     glow: "from-gold/25",
     text: "text-gold",
+    iconBg: "bg-gradient-to-br from-gold/25 to-gold/5 border-gold/30",
   },
   cyan: {
     ring: "group-hover:border-cyan/70",
     glow: "from-cyan/25",
     text: "text-cyan",
+    iconBg: "bg-gradient-to-br from-cyan/25 to-cyan/5 border-cyan/30",
   },
   magenta: {
     ring: "group-hover:border-magenta/70",
     glow: "from-magenta/25",
     text: "text-magenta",
+    iconBg: "bg-gradient-to-br from-magenta/25 to-magenta/5 border-magenta/30",
   },
   emerald: {
     ring: "group-hover:border-emerald/70",
     glow: "from-emerald/25",
     text: "text-emerald",
+    iconBg: "bg-gradient-to-br from-emerald/25 to-emerald/5 border-emerald/30",
   },
 };
 
 export function PanelCard({
   href,
-  emoji,
+  icon: Icon,
   title,
   subtitle,
   accent = "gold",
@@ -101,14 +104,15 @@ export function PanelCard({
           <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/5 blur-2xl transition-transform duration-700 group-hover:scale-150" />
 
           <div className="relative flex items-start justify-between">
-            <span
+            <div
               className={cn(
-                "select-none drop-shadow-[0_0_18px_rgba(232,201,121,0.35)] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6",
-                big ? "text-6xl" : "text-4xl"
+                "flex items-center justify-center rounded-2xl border transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3",
+                a.iconBg,
+                big ? "h-16 w-16" : "h-12 w-12"
               )}
             >
-              {emoji}
-            </span>
+              <Icon size={big ? 30 : 22} strokeWidth={1.75} className={a.text} />
+            </div>
             <svg
               width="18"
               height="18"

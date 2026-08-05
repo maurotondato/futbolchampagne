@@ -3,7 +3,23 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Settings, ShieldCheck, AlertCircle } from "lucide-react";
+import {
+  Settings,
+  ShieldCheck,
+  AlertCircle,
+  Goal,
+  Trophy,
+  TrendingUp,
+  Shirt,
+  Target,
+  Shield,
+  Crown,
+  CalendarDays,
+  Laugh,
+  Medal,
+  Clapperboard,
+  Mic,
+} from "lucide-react";
 import { PanelCard } from "./PanelCard";
 import { Crest } from "@/components/ui/Crest";
 import { PageShell } from "@/components/ui/PageShell";
@@ -13,22 +29,22 @@ import { useSound } from "@/components/ui/SoundProvider";
 import { isAwaitingResult, matchDateTime } from "@/lib/matchDay";
 
 const MENU_ITEMS = [
-  { href: "/armar-partido", emoji: "⚽", title: "Armar Partido", subtitle: "Formaciones en vivo", accent: "emerald" as const, big: true },
-  { href: "/tabla", emoji: "🏆", title: "Tabla", subtitle: "Posiciones de la liga", accent: "gold" as const },
-  { href: "/estadisticas", emoji: "📈", title: "Estadísticas", subtitle: "Números y gráficos", accent: "cyan" as const },
-  { href: "/jugadores", emoji: "👤", title: "Jugadores", subtitle: "Plantel y cartas", accent: "gold" as const },
-  { href: "/goleadores", emoji: "🎯", title: "Goleadores", subtitle: "Máximos artilleros", accent: "magenta" as const },
-  { href: "/vallas-invictas", emoji: "🧤", title: "Vallas Invictas", subtitle: "Arqueros de fierro", accent: "cyan" as const },
-  { href: "/mvp", emoji: "⭐", title: "MVP", subtitle: "Figuras de la fecha", accent: "gold" as const },
-  { href: "/historial", emoji: "📅", title: "Historial", subtitle: "Todos los martes", accent: "emerald" as const },
-  { href: "/cargadas", emoji: "😂", title: "Cargadas", subtitle: "Mandale una", accent: "magenta" as const },
-  { href: "/configuracion", emoji: "⚙", title: "Configuración", subtitle: "Sonido y ajustes", accent: "cyan" as const },
+  { href: "/armar-partido", icon: Goal, title: "Armar Partido", subtitle: "Formaciones en vivo", accent: "emerald" as const, big: true },
+  { href: "/tabla", icon: Trophy, title: "Tabla", subtitle: "Posiciones de la liga", accent: "gold" as const },
+  { href: "/estadisticas", icon: TrendingUp, title: "Estadísticas", subtitle: "Números y gráficos", accent: "cyan" as const },
+  { href: "/jugadores", icon: Shirt, title: "Jugadores", subtitle: "Plantel y cartas", accent: "gold" as const },
+  { href: "/goleadores", icon: Target, title: "Goleadores", subtitle: "Máximos artilleros", accent: "magenta" as const },
+  { href: "/vallas-invictas", icon: Shield, title: "Vallas Invictas", subtitle: "Arqueros de fierro", accent: "cyan" as const },
+  { href: "/mvp", icon: Crown, title: "MVP", subtitle: "Figuras de la fecha", accent: "gold" as const },
+  { href: "/historial", icon: CalendarDays, title: "Historial", subtitle: "Todos los martes", accent: "emerald" as const },
+  { href: "/cargadas", icon: Laugh, title: "Cargadas", subtitle: "Mandale una", accent: "magenta" as const },
+  { href: "/configuracion", icon: Settings, title: "Configuración", subtitle: "Sonido y ajustes", accent: "cyan" as const },
 ];
 
 const EXTRA_ITEMS = [
-  { href: "/premios", emoji: "🏅", title: "Premios", subtitle: "Balón de Oro y más" },
-  { href: "/momentos", emoji: "🎥", title: "Momentos", subtitle: "Goles y papelones" },
-  { href: "/previa", emoji: "🎙", title: "Previa", subtitle: "Simulá el partido" },
+  { href: "/premios", icon: Medal, title: "Premios", subtitle: "Balón de Oro y más" },
+  { href: "/momentos", icon: Clapperboard, title: "Momentos", subtitle: "Goles y papelones" },
+  { href: "/previa", icon: Mic, title: "Previa", subtitle: "Simulá el partido" },
 ];
 
 export function MainMenu() {
@@ -58,17 +74,32 @@ export function MainMenu() {
       <header className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-4 pt-8 sm:px-6 sm:pt-12">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="relative">
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, scale: 0.6, rotate: -25 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 180, damping: 14 }}
+            >
               <div className="absolute inset-0 -z-10 animate-pulse-glow rounded-full bg-gold/30 blur-xl" />
               <Crest size={54} />
-            </div>
+            </motion.div>
             <div>
-              <p className="font-hud text-[11px] uppercase tracking-[0.35em] text-ink-faint">
+              <motion.p
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15, duration: 0.5 }}
+                className="font-hud text-[11px] uppercase tracking-[0.35em] text-ink-faint"
+              >
                 Temporada 2026
-              </p>
-              <h1 className="font-display text-2xl uppercase leading-none text-gold-gradient sm:text-3xl">
+              </motion.p>
+              <motion.h1
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25, duration: 0.5 }}
+                className="font-display text-2xl uppercase leading-none text-gold-gradient sm:text-3xl"
+              >
                 {GROUP_NAME}
-              </h1>
+              </motion.h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
