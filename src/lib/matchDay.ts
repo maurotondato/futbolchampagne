@@ -3,6 +3,7 @@
  * el resultado. */
 
 const TUESDAY = 2;
+const MATCH_HOUR = 20;
 
 export function nextMatchDate(from = new Date()): Date {
   const d = new Date(from);
@@ -28,8 +29,15 @@ export function isToday(dateIso: string) {
   return dateIso === toISODate(new Date());
 }
 
-/** Un partido "scheduled" cuya fecha ya llegó o pasó — falta cargar el resultado. */
+/** Momento en que se juega el partido: el martes a las 20 hs. */
+export function matchDateTime(dateIso: string) {
+  return new Date(`${dateIso}T${String(MATCH_HOUR).padStart(2, "0")}:00:00`);
+}
+
+/** Un partido "scheduled" cuyo horario (martes 20 hs) ya llegó o pasó —
+ * falta cargar el resultado. Antes de esa hora todavía se muestra la
+ * cuenta regresiva, aunque ya sea martes. */
 export function isAwaitingResult(dateIso: string, status: string) {
   if (status !== "scheduled") return false;
-  return dateIso <= toISODate(new Date());
+  return matchDateTime(dateIso).getTime() <= Date.now();
 }

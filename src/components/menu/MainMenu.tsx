@@ -10,7 +10,7 @@ import { PageShell } from "@/components/ui/PageShell";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
 import { GROUP_NAME } from "@/lib/data/demoData";
 import { useSound } from "@/components/ui/SoundProvider";
-import { isAwaitingResult } from "@/lib/matchDay";
+import { isAwaitingResult, matchDateTime } from "@/lib/matchDay";
 
 const MENU_ITEMS = [
   { href: "/armar-partido", emoji: "⚽", title: "Armar Partido", subtitle: "Formaciones en vivo", accent: "emerald" as const, big: true },
@@ -166,7 +166,7 @@ export function MainMenu() {
 }
 
 function formatCountdown(dateIso: string, now: Date) {
-  const target = new Date(`${dateIso}T21:00:00`);
+  const target = matchDateTime(dateIso);
   const diffMs = target.getTime() - now.getTime();
   if (diffMs <= 0) return "¡Es hoy!";
   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
