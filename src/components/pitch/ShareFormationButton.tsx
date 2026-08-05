@@ -7,6 +7,7 @@ import { GlowButton } from "@/components/ui/GlowButton";
 import { ShareGraphic } from "./ShareGraphic";
 import type { Match, Player } from "@/lib/data/types";
 import { whatsappLink } from "@/lib/whatsapp";
+import { captureNodeToPng } from "@/lib/captureNode";
 
 export function ShareFormationButton({
   match,
@@ -27,12 +28,9 @@ export function ShareFormationButton({
     setError(false);
     setImgUrl(null);
     try {
-      const { toPng } = await import("html-to-image");
       const node = nodeRef.current;
       if (!node) throw new Error("no node");
-      // Two passes: fonts/layout settle better on the second capture.
-      await toPng(node, { pixelRatio: 1.6 });
-      const dataUrl = await toPng(node, { pixelRatio: 1.6 });
+      const dataUrl = await captureNodeToPng(node);
       setImgUrl(dataUrl);
     } catch {
       setError(true);

@@ -24,7 +24,7 @@ const FEET: Player["dominantFoot"][] = ["derecha", "izquierda", "ambidiestro"];
 
 function age(birthdate?: string | null) {
   if (!birthdate) return null;
-  const b = new Date(birthdate);
+  const b = new Date(`${birthdate}T12:00:00`);
   const diff = Date.now() - b.getTime();
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
 }
