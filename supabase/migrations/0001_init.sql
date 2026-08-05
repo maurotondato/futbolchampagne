@@ -112,8 +112,12 @@ create index if not exists idx_stats_player on player_match_stats(player_id);
 create index if not exists idx_media_match on match_media(match_id);
 
 -- ---------------------------------------------------------------------
--- Row Level Security: lectura pública (es una app para el grupo, no hay
--- datos sensibles), escritura solo para usuarios autenticados.
+-- Row Level Security: lectura y escritura públicas. No hay login por
+-- usuario — el único filtro es la contraseña compartida del grupo a nivel
+-- de la app (PasswordGate, "fulbito"), no autenticación real de Supabase.
+-- Cualquiera con el link y la contraseña puede armar equipos, cargar
+-- resultados y editar jugadores, a propósito: es una app casera para un
+-- grupo de amigos, no un sistema con roles.
 -- ---------------------------------------------------------------------
 alter table players enable row level security;
 alter table matches enable row level security;
@@ -123,34 +127,34 @@ alter table match_media enable row level security;
 alter table awards enable row level security;
 
 create policy "public read players" on players for select using (true);
-create policy "auth write players" on players for insert to authenticated with check (true);
-create policy "auth update players" on players for update to authenticated using (true);
-create policy "auth delete players" on players for delete to authenticated using (true);
+create policy "public write players" on players for insert to public with check (true);
+create policy "public update players" on players for update to public using (true);
+create policy "public delete players" on players for delete to public using (true);
 
 create policy "public read matches" on matches for select using (true);
-create policy "auth write matches" on matches for insert to authenticated with check (true);
-create policy "auth update matches" on matches for update to authenticated using (true);
-create policy "auth delete matches" on matches for delete to authenticated using (true);
+create policy "public write matches" on matches for insert to public with check (true);
+create policy "public update matches" on matches for update to public using (true);
+create policy "public delete matches" on matches for delete to public using (true);
 
 create policy "public read lineup" on lineup_slots for select using (true);
-create policy "auth write lineup" on lineup_slots for insert to authenticated with check (true);
-create policy "auth update lineup" on lineup_slots for update to authenticated using (true);
-create policy "auth delete lineup" on lineup_slots for delete to authenticated using (true);
+create policy "public write lineup" on lineup_slots for insert to public with check (true);
+create policy "public update lineup" on lineup_slots for update to public using (true);
+create policy "public delete lineup" on lineup_slots for delete to public using (true);
 
 create policy "public read stats" on player_match_stats for select using (true);
-create policy "auth write stats" on player_match_stats for insert to authenticated with check (true);
-create policy "auth update stats" on player_match_stats for update to authenticated using (true);
-create policy "auth delete stats" on player_match_stats for delete to authenticated using (true);
+create policy "public write stats" on player_match_stats for insert to public with check (true);
+create policy "public update stats" on player_match_stats for update to public using (true);
+create policy "public delete stats" on player_match_stats for delete to public using (true);
 
 create policy "public read media" on match_media for select using (true);
-create policy "auth write media" on match_media for insert to authenticated with check (true);
-create policy "auth update media" on match_media for update to authenticated using (true);
-create policy "auth delete media" on match_media for delete to authenticated using (true);
+create policy "public write media" on match_media for insert to public with check (true);
+create policy "public update media" on match_media for update to public using (true);
+create policy "public delete media" on match_media for delete to public using (true);
 
 create policy "public read awards" on awards for select using (true);
-create policy "auth write awards" on awards for insert to authenticated with check (true);
-create policy "auth update awards" on awards for update to authenticated using (true);
-create policy "auth delete awards" on awards for delete to authenticated using (true);
+create policy "public write awards" on awards for insert to public with check (true);
+create policy "public update awards" on awards for update to public using (true);
+create policy "public delete awards" on awards for delete to public using (true);
 
 -- Buckets de Storage para fotos de jugadores y momentos del partido.
 insert into storage.buckets (id, name, public)
@@ -163,20 +167,20 @@ on conflict (id) do nothing;
 
 create policy "public read player photos" on storage.objects for select
   using (bucket_id = 'player-photos');
-create policy "auth upload player photos" on storage.objects for insert to authenticated
+create policy "public upload player photos" on storage.objects for insert to public
   with check (bucket_id = 'player-photos');
-create policy "auth update player photos" on storage.objects for update to authenticated
+create policy "public update player photos" on storage.objects for update to public
   using (bucket_id = 'player-photos');
-create policy "auth delete player photos" on storage.objects for delete to authenticated
+create policy "public delete player photos" on storage.objects for delete to public
   using (bucket_id = 'player-photos');
 
 create policy "public read match media" on storage.objects for select
   using (bucket_id = 'match-media');
-create policy "auth upload match media" on storage.objects for insert to authenticated
+create policy "public upload match media" on storage.objects for insert to public
   with check (bucket_id = 'match-media');
-create policy "auth update match media" on storage.objects for update to authenticated
+create policy "public update match media" on storage.objects for update to public
   using (bucket_id = 'match-media');
-create policy "auth delete match media" on storage.objects for delete to authenticated
+create policy "public delete match media" on storage.objects for delete to public
   using (bucket_id = 'match-media');
 
 -- ---------------------------------------------------------------------
