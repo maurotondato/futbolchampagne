@@ -168,7 +168,7 @@ function MatchDetailContent() {
                   </Link>
                 </div>
               )}
-              <MatchStatsForm match={match} participants={participants} />
+              <MatchStatsForm match={match} participants={participants} players={players} />
             </>
           )}
         </GlassPanel>

@@ -9,13 +9,14 @@ import { GlassPanel } from "@/components/ui/GlassPanel";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { FifaCard } from "@/components/players/FifaCard";
 import { AttributeEditor } from "@/components/players/AttributeEditor";
+import { PhotoCropper } from "@/components/players/PhotoCropper";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
 import { computePlayerSummaries } from "@/lib/data/stats";
 import { formatShortDate } from "@/lib/utils";
 import { randomCargada } from "@/lib/cargadasPhrases";
 import { whatsappLink } from "@/lib/whatsapp";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { fileToResizedDataUrl, dataUrlToBlob } from "@/lib/image";
+import { dataUrlToBlob } from "@/lib/image";
 import type { FieldPosition, FunnyAttributes, Player } from "@/lib/data/types";
 
 const POSITIONS: FieldPosition[] = ["ARQ", "DEF", "MED", "DEL"];
@@ -47,6 +48,7 @@ function PlayerProfileContent() {
   const [cargada, setCargada] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   useEffect(() => {
     loadAll();
@@ -95,12 +97,16 @@ function PlayerProfileContent() {
     setDraftAttrs(null);
   }
 
-  async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) return;
+    e.target.value = "";
+    if (file) setPendingFile(file);
+  }
+
+  async function handleCropped(dataUrl: string) {
+    setPendingFile(null);
     setUploading(true);
     try {
-      const dataUrl = await fileToResizedDataUrl(file, 400);
       const sb = getSupabaseBrowserClient();
       if (isSupabaseConfigured && sb) {
         const blob = dataUrlToBlob(dataUrl);
@@ -120,7 +126,6 @@ function PlayerProfileContent() {
       }
     } finally {
       setUploading(false);
-      e.target.value = "";
     }
   }
 
@@ -155,7 +160,10 @@ function PlayerProfileContent() {
             >
               <Camera size={14} /> {uploading ? "Subiendo…" : "Cambiar foto"}
             </GlowButton>
-            <input ref={fileRef} type="file" accept="image/*" hidden onChange={handlePhoto} />
+            <input ref={fileRef} type="file" accept="image/*" hidden onChange={handlePhotoSelect} />
+            {pendingFile && (
+              <PhotoCropper file={pendingFile} onCancel={() => setPendingFile(null)} onConfirm={handleCropped} />
+            )}
           </div>
         </div>
 

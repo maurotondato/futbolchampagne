@@ -24,6 +24,15 @@
   --fc-magenta: #ff3d7f;
   --fc-emerald: #22e07f;
 
+  /* Equipo Rojo / Equipo Azul — the two sides on the pitch, everywhere a
+     player/card/token needs to say "which team": SlotCard, PlayerToken,
+     ShareGraphic, MatchStatsForm. Distinct from --fc-gold, which stays the
+     app's general premium/branding accent (buttons, MVP, nav). */
+  --fc-team-a: #ef4444;
+  --fc-team-a-bright: #ff8080;
+  --fc-team-b: #3a7bff;
+  --fc-team-b-bright: #7bb0ff;
+
   --fc-text: #eef1f8;
   --fc-text-dim: #93a0bd;
   --fc-text-faint: #5c6685;
@@ -51,6 +60,11 @@
   --color-azure: var(--fc-azure);
   --color-magenta: var(--fc-magenta);
   --color-emerald: var(--fc-emerald);
+
+  --color-team-a: var(--fc-team-a);
+  --color-team-a-bright: var(--fc-team-a-bright);
+  --color-team-b: var(--fc-team-b);
+  --color-team-b-bright: var(--fc-team-b-bright);
 
   --color-ink: var(--fc-text);
   --color-ink-dim: var(--fc-text-dim);

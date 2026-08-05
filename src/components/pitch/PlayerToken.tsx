@@ -70,13 +70,13 @@ export function PlayerToken({
         size={52}
         ring={cn(
           "shadow-[0_4px_14px_rgba(0,0,0,0.5)]",
-          team === "A" ? "border-gold ring-2 ring-gold/40" : "border-cyan ring-2 ring-cyan/40"
+          team === "A" ? "border-team-a ring-2 ring-team-a/40" : "border-team-b ring-2 ring-team-b/40"
         )}
       />
       <span
         className={cn(
           "rounded px-1.5 py-0.5 font-hud text-[10px] font-semibold uppercase tracking-wide text-white shadow",
-          team === "A" ? "bg-gold-dim/90" : "bg-cyan/30"
+          team === "A" ? "bg-team-a/90" : "bg-team-b/70"
         )}
       >
         {player.nickname || player.name.split(" ")[0]}

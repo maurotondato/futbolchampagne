@@ -92,7 +92,7 @@ export function SlotPicker({
           >
             <div className="flex items-center justify-between border-b border-line p-4">
               <p className="font-hud text-sm uppercase tracking-wide text-ink">
-                <span className={team === "A" ? "text-gold" : "text-cyan"}>
+                <span className={team === "A" ? "text-team-a" : "text-team-b"}>
                   {team === "A" ? "Equipo A" : "Equipo B"}
                 </span>{" "}
                 · {slotDef.label}

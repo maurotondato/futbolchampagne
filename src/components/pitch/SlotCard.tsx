@@ -40,13 +40,13 @@ export function SlotCard({
             size={52}
             ring={cn(
               "shadow-[0_4px_14px_rgba(0,0,0,0.5)]",
-              team === "A" ? "border-gold ring-2 ring-gold/40" : "border-cyan ring-2 ring-cyan/40"
+              team === "A" ? "border-team-a ring-2 ring-team-a/40" : "border-team-b ring-2 ring-team-b/40"
             )}
           />
           <span
             className={cn(
               "max-w-[84px] truncate rounded px-1.5 py-0.5 font-hud text-[10px] font-semibold uppercase tracking-wide text-white shadow",
-              team === "A" ? "bg-gold-dim/90" : "bg-cyan/30"
+              team === "A" ? "bg-team-a/90" : "bg-team-b/70"
             )}
           >
             {player.nickname || player.name.split(" ")[0]}
@@ -57,7 +57,7 @@ export function SlotCard({
           <span
             className={cn(
               "flex h-11 w-11 items-center justify-center rounded-full border-2 border-dashed bg-black/20 backdrop-blur-sm",
-              team === "A" ? "border-gold/50 text-gold/70" : "border-cyan/50 text-cyan/70"
+              team === "A" ? "border-team-a/50 text-team-a-bright" : "border-team-b/50 text-team-b-bright"
             )}
           >
             <Plus size={18} />
