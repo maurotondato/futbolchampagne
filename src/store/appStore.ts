@@ -5,6 +5,8 @@ import { persist, createJSONStorage, type StateStorage } from "zustand/middlewar
 import { safeGet, safeSet, safeRemove } from "@/lib/safeStorage";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { DEMO_AWARDS, DEMO_MATCHES, DEMO_PLAYERS } from "@/lib/data/demoData";
+import { isValidSlotCode } from "@/lib/formation";
+import { nextMatchISODate } from "@/lib/matchDay";
 import type {
   Award,
   LineupSlot,
@@ -40,6 +42,24 @@ const safeStateStorage: StateStorage = {
   },
   removeItem: (name) => safeRemove("local", name),
 };
+
+function isTuesday(dateIso: string) {
+  return new Date(`${dateIso}T12:00:00`).getDay() === 2;
+}
+
+// Repairs state saved by older app versions: lineup slots used to store
+// free x/y coordinates instead of a fixed SlotCode (invalid slot values
+// crash the share-image and match-detail pitch renders), and the "next
+// match" date used to be computed as a fixed offset instead of "this
+// week's Tuesday" (so it could land on the wrong weekday and get stuck
+// showing a stale countdown forever).
+function repairLegacyState(matches: Match[]): Match[] {
+  return matches.map((m) => ({
+    ...m,
+    lineup: m.lineup.filter((l) => isValidSlotCode(l.slot)),
+    date: m.status === "scheduled" && !isTuesday(m.date) ? nextMatchISODate() : m.date,
+  }));
+}
 
 interface AppState {
   players: Player[];
@@ -344,6 +364,14 @@ export const useAppStore = create<AppState>()(
     {
       name: "futbol-champagne-store",
       storage: createJSONStorage(() => safeStateStorage),
+      version: 2,
+      migrate: (persisted) => {
+        const state = persisted as Partial<AppState> | undefined;
+        if (state?.matches) {
+          state.matches = repairLegacyState(state.matches);
+        }
+        return state;
+      },
       partialize: (state) => ({
         players: state.players,
         matches: state.matches,

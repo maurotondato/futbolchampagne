@@ -12,7 +12,7 @@ import { ParticipantPicker } from "@/components/historial/ParticipantPicker";
 import { MatchStatsForm } from "@/components/historial/MatchStatsForm";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
 import { cn, formatDate } from "@/lib/utils";
-import { slotCoords } from "@/lib/formation";
+import { isValidSlotCode, slotCoords } from "@/lib/formation";
 
 function MatchDetailContent() {
   const id = useSearchParams().get("id") ?? "";
@@ -59,7 +59,7 @@ function MatchDetailContent() {
             <Pitch ref={pitchRef}>
               {match.lineup.map((slot) => {
                 const player = players.find((p) => p.id === slot.playerId);
-                if (!player) return null;
+                if (!player || !isValidSlotCode(slot.slot)) return null;
                 const { x, y } = slotCoords(slot.slot, slot.team);
                 return (
                   <PlayerToken
