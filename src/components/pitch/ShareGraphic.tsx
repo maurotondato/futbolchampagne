@@ -148,7 +148,7 @@ function Token({
         flexDirection: "column",
         alignItems: "center",
         gap: 6,
-        width: 110,
+        width: 140,
       }}
     >
       <div
@@ -179,14 +179,14 @@ function Token({
         style={{
           fontFamily: "var(--font-hud), sans-serif",
           fontWeight: 700,
-          fontSize: 15,
+          fontSize: 19,
           textTransform: "uppercase",
           color: "#fff",
           background: "rgba(0,0,0,0.55)",
-          padding: "2px 10px",
+          padding: "3px 12px",
           borderRadius: 999,
           whiteSpace: "nowrap",
-          maxWidth: 130,
+          maxWidth: 160,
           overflow: "hidden",
           textOverflow: "ellipsis",
         }}

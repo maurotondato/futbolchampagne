@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Film, Pencil, Users } from "lucide-react";
+import { Film, Pencil, Users, CalendarDays } from "lucide-react";
 import { PageShell, TopBar } from "@/components/ui/PageShell";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { GlowButton } from "@/components/ui/GlowButton";
@@ -20,7 +20,9 @@ function MatchDetailContent() {
   const { loadAll, hydrated } = useHydrateStore();
   const players = useAppStore((s) => s.players);
   const matches = useAppStore((s) => s.matches);
+  const updateMatch = useAppStore((s) => s.updateMatch);
   const pitchRef = useRef<HTMLDivElement>(null);
+  const [editingDate, setEditingDate] = useState(false);
 
   useEffect(() => {
     loadAll();
@@ -62,6 +64,34 @@ function MatchDetailContent() {
     <PageShell>
       <TopBar title={formatDate(match.date)} subtitle={`${match.teamAName} vs ${match.teamBName}`} onBack={() => router.push("/historial")} />
       <div className="mx-auto max-w-4xl space-y-6 px-4 pb-16 pt-6 sm:px-6">
+        <GlassPanel className="flex items-center justify-between gap-3 p-4">
+          <div className="flex items-center gap-3">
+            <CalendarDays size={18} className="shrink-0 text-ink-faint" />
+            {editingDate ? (
+              <input
+                type="date"
+                defaultValue={match.date}
+                autoFocus
+                onBlur={(e) => {
+                  if (e.target.value) updateMatch(match.id, { date: e.target.value });
+                  setEditingDate(false);
+                }}
+                className="rounded-lg border border-line bg-white/5 px-2 py-1 font-hud text-sm text-ink outline-none focus:border-gold/50"
+              />
+            ) : (
+              <p className="font-hud text-sm text-ink">{formatDate(match.date)}</p>
+            )}
+          </div>
+          {!editingDate && (
+            <button
+              onClick={() => setEditingDate(true)}
+              className="flex items-center gap-1.5 font-hud text-xs uppercase tracking-wide text-ink-faint hover:text-gold"
+            >
+              <Pencil size={13} /> Editar fecha
+            </button>
+          )}
+        </GlassPanel>
+
         {match.lineup.length > 0 && (
           <div className="mx-auto max-w-sm">
             <Pitch ref={pitchRef}>

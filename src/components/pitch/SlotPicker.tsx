@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X, UserMinus } from "lucide-react";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
@@ -39,6 +39,20 @@ export function SlotPicker({
 }) {
   const [query, setQuery] = useState("");
   const slotDef = slotByCode(slotCode);
+
+  useEffect(() => {
+    // On iOS, focusing the search input while the background page can still
+    // scroll makes Safari auto-scroll the page to "reveal" the input — which
+    // drags this fixed-position sheet down out of the viewport with it
+    // (looks like it vanished; it's just below the fold). Locking body
+    // scroll while open keeps the page from moving out from under it.
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
   const available = useMemo(() => {
     const q = normalize(query.trim());

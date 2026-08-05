@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import Link from "next/link";
+import { Search, UserPlus } from "lucide-react";
 import { PageShell, TopBar } from "@/components/ui/PageShell";
 import { PlayerListCard } from "@/components/players/PlayerListCard";
+import { GlowButton } from "@/components/ui/GlowButton";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
 import type { FieldPosition } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
@@ -43,7 +45,18 @@ export default function JugadoresPage() {
 
   return (
     <PageShell>
-      <TopBar title="Jugadores" subtitle={`${players.filter((p) => p.active).length} en el plantel`} onBack={() => router.push("/")} />
+      <TopBar
+        title="Jugadores"
+        subtitle={`${players.filter((p) => p.active).length} en el plantel`}
+        onBack={() => router.push("/")}
+        right={
+          <Link href="/admin/jugadores">
+            <GlowButton variant="ghost" className="flex items-center gap-2">
+              <UserPlus size={15} /> Agregar
+            </GlowButton>
+          </Link>
+        }
+      />
       <div className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6">
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:max-w-xs">
