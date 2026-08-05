@@ -83,7 +83,12 @@ export function SlotPicker({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 40, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="glass-strong flex max-h-[80vh] w-full flex-col rounded-t-2xl border border-line sm:max-w-sm sm:rounded-2xl"
+            // Fixed height (not max-height) on mobile so the sheet never
+            // resizes as the results list shrinks while typing — a
+            // shrinking sheet moves the focused search input's on-screen
+            // position, which makes iOS re-trigger its "scroll to keep the
+            // focused input visible" behavior and pan the whole page.
+            className="glass-strong flex h-[75dvh] w-full flex-col rounded-t-2xl border border-line sm:h-auto sm:max-h-[80vh] sm:max-w-sm sm:rounded-2xl"
           >
             <div className="flex items-center justify-between border-b border-line p-4">
               <p className="font-hud text-sm uppercase tracking-wide text-ink">
