@@ -56,7 +56,10 @@ function isTuesday(dateIso: string) {
 function repairLegacyState(matches: Match[]): Match[] {
   return matches.map((m) => ({
     ...m,
-    lineup: m.lineup.filter((l) => isValidSlotCode(l.slot)),
+    // "m-proximo" is the reserved id of the seed demo match, which used to
+    // ship with a fake 14-player lineup just to preview the formation
+    // screen — confusing in real use, where it should start empty.
+    lineup: m.id === "m-proximo" ? [] : m.lineup.filter((l) => isValidSlotCode(l.slot)),
     date: m.status === "scheduled" && !isTuesday(m.date) ? nextMatchISODate() : m.date,
   }));
 }
@@ -364,7 +367,7 @@ export const useAppStore = create<AppState>()(
     {
       name: "futbol-champagne-store",
       storage: createJSONStorage(() => safeStateStorage),
-      version: 2,
+      version: 3,
       migrate: (persisted) => {
         const state = persisted as Partial<AppState> | undefined;
         if (state?.matches) {

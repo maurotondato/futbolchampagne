@@ -38,7 +38,8 @@ export const DEMO_PLAYERS: Player[] = [
 
 // Todavía no hay partidos jugados cargados: arranca en cero y cada martes
 // se suma uno real desde Historial / Admin. Se deja un próximo partido
-// "programado" (sin resultado) solo para mostrar el armado de equipos.
+// "programado" (sin resultado) con la cancha vacía — se arma desde
+// "Armar Partido".
 export const DEMO_MATCHES: Match[] = [
   {
     id: "m-proximo",
@@ -48,22 +49,7 @@ export const DEMO_MATCHES: Match[] = [
     teamAScore: null,
     teamBScore: null,
     status: "scheduled",
-    lineup: [
-      { playerId: "p1", team: "A", slot: "ARQ" },
-      { playerId: "p2", team: "A", slot: "LI" },
-      { playerId: "p3", team: "A", slot: "DFC" },
-      { playerId: "p16", team: "A", slot: "LD" },
-      { playerId: "p6", team: "A", slot: "MED1" },
-      { playerId: "p7", team: "A", slot: "MED2" },
-      { playerId: "p11", team: "A", slot: "DEL" },
-      { playerId: "p15", team: "B", slot: "ARQ" },
-      { playerId: "p4", team: "B", slot: "LI" },
-      { playerId: "p5", team: "B", slot: "DFC" },
-      { playerId: "p20", team: "B", slot: "LD" },
-      { playerId: "p8", team: "B", slot: "MED1" },
-      { playerId: "p9", team: "B", slot: "MED2" },
-      { playerId: "p13", team: "B", slot: "DEL" },
-    ],
+    lineup: [],
     stats: [],
     media: [],
   },

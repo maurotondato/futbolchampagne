@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Plus, ChevronRight, AlertCircle } from "lucide-react";
+import { Plus, ChevronRight, AlertCircle, Trash2 } from "lucide-react";
 import { PageShell, TopBar } from "@/components/ui/PageShell";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
@@ -17,6 +17,13 @@ export default function HistorialPage() {
   const { loadAll, hydrated } = useHydrateStore();
   const matches = useAppStore((s) => s.matches);
   const addMatch = useAppStore((s) => s.addMatch);
+  const deleteMatch = useAppStore((s) => s.deleteMatch);
+
+  function handleDelete(id: string, dateLabel: string) {
+    if (confirm(`¿Borrar el partido del ${dateLabel}? No se puede deshacer.`)) {
+      deleteMatch(id);
+    }
+  }
 
   useEffect(() => {
     loadAll();
@@ -80,8 +87,14 @@ export default function HistorialPage() {
             ) : (
               <div className="space-y-2">
                 {sorted.map((m, i) => (
-                  <motion.div key={m.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                    <Link href={`/historial/detalle?id=${m.id}`}>
+                  <motion.div
+                    key={m.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Link href={`/historial/detalle?id=${m.id}`} className="min-w-0 flex-1">
                       <div className="glass flex items-center justify-between gap-3 rounded-xl border border-line p-4 transition hover:border-gold/50">
                         <div className="min-w-0">
                           <p className="truncate font-hud text-sm font-semibold text-ink">
@@ -112,6 +125,13 @@ export default function HistorialPage() {
                         </div>
                       </div>
                     </Link>
+                    <button
+                      onClick={() => handleDelete(m.id, formatDate(m.date))}
+                      aria-label="Borrar partido"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-white/5 text-ink-faint transition hover:border-magenta/60 hover:text-magenta"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </motion.div>
                 ))}
               </div>
