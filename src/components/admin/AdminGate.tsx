@@ -1,48 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { AlertTriangle, LogOut } from "lucide-react";
-import { useAuth } from "@/lib/supabase/useAuth";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { AlertTriangle, Database } from "lucide-react";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
+/**
+ * No per-user login — the shared app password (PasswordGate) is the only
+ * gate, on purpose, so anyone in the group can build teams and load
+ * results without a separate account. This just surfaces where data is
+ * actually being saved.
+ */
 export function AdminGate({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const { user, loading, isDemo } = useAuth();
-
-  useEffect(() => {
-    if (!isDemo && !loading && !user) router.replace("/login");
-  }, [isDemo, loading, user, router]);
-
-  if (loading) {
-    return <p className="py-20 text-center font-hud text-ink-faint">Verificando acceso…</p>;
-  }
-
-  if (!isDemo && !user) {
-    return null;
-  }
-
   return (
     <div>
-      {isDemo && (
+      {isSupabaseConfigured ? (
+        <div className="mx-auto mb-6 flex max-w-4xl items-center gap-2 rounded-xl border border-emerald/30 bg-emerald/10 px-4 py-2.5 font-hud text-xs text-emerald">
+          <Database size={14} />
+          Conectado a Supabase: los cambios los ve todo el grupo.
+        </div>
+      ) : (
         <div className="mx-auto mb-6 flex max-w-4xl items-center gap-2 rounded-xl border border-cyan/30 bg-cyan/10 px-4 py-2.5 font-hud text-xs text-cyan">
           <AlertTriangle size={14} />
-          Modo demo: los cambios se guardan en este navegador. Conectá Supabase para persistir de
-          verdad y exigir login.
-        </div>
-      )}
-      {!isDemo && user && (
-        <div className="mx-auto mb-6 flex max-w-4xl items-center justify-between rounded-xl border border-line bg-white/5 px-4 py-2.5 font-hud text-xs text-ink-dim">
-          <span>Conectado como {user.email}</span>
-          <button
-            onClick={async () => {
-              await getSupabaseBrowserClient()?.auth.signOut();
-              router.push("/");
-            }}
-            className="flex items-center gap-1 text-magenta hover:underline"
-          >
-            <LogOut size={13} /> Salir
-          </button>
+          Modo demo: los cambios se guardan solo en este navegador.
         </div>
       )}
       {children}

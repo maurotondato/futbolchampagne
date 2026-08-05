@@ -48,8 +48,12 @@ un cartel avisando que estás en modo demo en el panel de administración.
    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
    ```
    (Están en tu proyecto de Supabase, en *Project Settings → API*.)
-4. Reiniciá el servidor de desarrollo. A partir de ahí, `/admin` va a pedir
-   login real (Supabase Auth) y todo se guarda en la base de datos.
+4. Reiniciá el servidor de desarrollo. A partir de ahí todo se guarda en la
+   base de datos real — sin login por usuario: cualquiera que entre con la
+   contraseña compartida (`fulbito`) puede armar equipos, cargar resultados
+   y editar jugadores desde `/admin`, igual que en modo demo. Las políticas
+   de la base (RLS) están escritas para permitir lectura y escritura
+   públicas a propósito, no hay roles.
 5. **Importante:** los números de teléfono de los jugadores quedan
    guardados en la base de datos para armar los links directos de WhatsApp
    de "Cargadas". Si el repo de este proyecto es público, considerá
@@ -86,7 +90,7 @@ src/
     ui/                   design system (glass, botones, avatar, etc.)
   lib/
     data/                 tipos, datos demo, cálculo de estadísticas, ELO
-    supabase/              cliente de Supabase (browser) + auth
+    supabase/              cliente de Supabase (browser), sin auth por usuario
     cargadasPhrases.ts     banco de frases para las cargadas
     previa.ts               generador de la "simulación previa"
     whatsapp.ts              helper para links de wa.me
