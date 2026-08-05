@@ -3,12 +3,12 @@
 import { Suspense, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Film } from "lucide-react";
+import { Film, Pencil, Users } from "lucide-react";
 import { PageShell, TopBar } from "@/components/ui/PageShell";
 import { GlassPanel } from "@/components/ui/GlassPanel";
+import { GlowButton } from "@/components/ui/GlowButton";
 import { Pitch } from "@/components/pitch/Pitch";
 import { PlayerToken } from "@/components/pitch/PlayerToken";
-import { ParticipantPicker } from "@/components/historial/ParticipantPicker";
 import { MatchStatsForm } from "@/components/historial/MatchStatsForm";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
 import { cn, formatDate } from "@/lib/utils";
@@ -49,6 +49,14 @@ function MatchDetailContent() {
   const participants = match.lineup
     .map((slot) => ({ player: players.find((p) => p.id === slot.playerId), team: slot.team }))
     .filter((p): p is { player: (typeof players)[number]; team: "A" | "B" } => Boolean(p.player));
+
+  // "Armar Partido" always opens the earliest scheduled match — only offer
+  // the shortcut when that's actually this one, so it can't silently take
+  // someone into editing a different match's formation.
+  const nextScheduledId = [...matches]
+    .filter((m) => m.status === "scheduled")
+    .sort((a, b) => a.date.localeCompare(b.date))[0]?.id;
+  const canEditFormation = match.status === "scheduled" && match.id === nextScheduledId;
 
   return (
     <PageShell>
@@ -102,9 +110,36 @@ function MatchDetailContent() {
             </p>
           )}
           {match.lineup.length === 0 ? (
-            <ParticipantPicker matchId={match.id} players={players.filter((p) => p.active)} />
+            <div className="flex flex-col items-center gap-3 py-6 text-center">
+              <p className="font-hud text-sm text-ink-dim">
+                Este partido todavía no tiene formación cargada.
+              </p>
+              {canEditFormation ? (
+                <Link href="/armar-partido">
+                  <GlowButton variant="gold" className="flex items-center gap-2">
+                    <Users size={15} /> Armar equipos
+                  </GlowButton>
+                </Link>
+              ) : (
+                <p className="font-hud text-xs text-ink-faint">
+                  No se puede armar formación para este partido — ya no es el próximo programado.
+                </p>
+              )}
+            </div>
           ) : (
-            <MatchStatsForm match={match} participants={participants} />
+            <>
+              {canEditFormation && (
+                <div className="mb-4 flex justify-end">
+                  <Link
+                    href="/armar-partido"
+                    className="flex items-center gap-1.5 font-hud text-xs uppercase tracking-wide text-cyan hover:underline"
+                  >
+                    <Pencil size={13} /> Editar formación
+                  </Link>
+                </div>
+              )}
+              <MatchStatsForm match={match} participants={participants} />
+            </>
           )}
         </GlassPanel>
       </div>

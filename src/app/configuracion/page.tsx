@@ -19,7 +19,12 @@ export default function ConfiguracionPage() {
       return;
     }
     safeRemove("local", "futbol-champagne-store");
-    window.location.reload();
+    // Cache-busting navigation instead of reload() — forces a real network
+    // fetch of the app instead of possibly reusing a stale cached version.
+    // A full page load is the point here, so router.push() (client-side,
+    // no refetch) wouldn't do what this button promises.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.href = `${window.location.pathname}?t=${Date.now()}`;
   }
 
   function handleLock() {
