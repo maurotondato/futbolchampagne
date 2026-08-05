@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Star, Save } from "lucide-react";
+import { Star, Save, Share2 } from "lucide-react";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { useAppStore } from "@/store/appStore";
+import { whatsappLink } from "@/lib/whatsapp";
 import type { Match, Player, PlayerMatchStat } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ function defaultStat(playerId: string, team: "A" | "B", existing?: PlayerMatchSt
       redCards: 0,
       saves: 0,
       errors: 0,
+      goalsAgainst: 0,
       rating: 6,
       isMvp: false,
       isGoalkeeper: false,
@@ -53,7 +55,7 @@ export function MatchStatsForm({
     return initial;
   });
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(match.status === "played");
 
   function update(playerId: string, patch: Partial<PlayerMatchStat>) {
     setDraft((prev) => ({ ...prev, [playerId]: { ...prev[playerId], ...patch } }));
@@ -74,7 +76,25 @@ export function MatchStatsForm({
     }
     setSaving(false);
     setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  }
+
+  function shareMessage() {
+    const scorers = participants
+      .map(({ player }) => ({ player, goals: draft[player.id]?.goals ?? 0 }))
+      .filter((s) => s.goals > 0)
+      .map((s) => `⚽ ${s.player.nickname || s.player.name.split(" ")[0]}${s.goals > 1 ? ` x${s.goals}` : ""}`);
+    const mvpPlayer = participants.find(({ player }) => player.id === mvpId)?.player;
+    const late = participants
+      .filter(({ player }) => (draft[player.id]?.minutesLate ?? 0) > 0)
+      .map(({ player }) => player.nickname || player.name.split(" ")[0]);
+
+    const lines = [
+      `🍾⚽ ${match.teamAName} ${scoreA} - ${scoreB} ${match.teamBName}`,
+      ...(scorers.length ? ["", "Goles:", ...scorers] : []),
+      ...(mvpPlayer ? ["", `⭐ MVP: ${mvpPlayer.nickname || mvpPlayer.name}`] : []),
+      ...(late.length ? ["", `⏰ Llegaron tarde: ${late.join(", ")}`] : []),
+    ];
+    return lines.join("\n");
   }
 
   return (
@@ -119,14 +139,9 @@ export function MatchStatsForm({
                 </button>
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
-                <MiniField label="⚽ Gol" value={stat.goals} onChange={(v) => update(player.id, { goals: v })} />
-                <MiniField label="🅰️ Asist" value={stat.assists} onChange={(v) => update(player.id, { assists: v })} />
-                <MiniField label="🟨 Am." value={stat.yellowCards} max={2} onChange={(v) => update(player.id, { yellowCards: v })} />
-                <MiniField label="🟥 Roja" value={stat.redCards} max={1} onChange={(v) => update(player.id, { redCards: v })} />
-                <MiniField label="Ataj" value={stat.saves} disabled={!stat.isGoalkeeper} onChange={(v) => update(player.id, { saves: v })} />
-                <MiniField label="Error" value={stat.errors} onChange={(v) => update(player.id, { errors: v })} />
-                <MiniField label="Tarde" value={stat.minutesLate} onChange={(v) => update(player.id, { minutesLate: v })} />
+              <div className="grid grid-cols-3 gap-2">
+                <MiniField label="⚽ Goles" value={stat.goals} onChange={(v) => update(player.id, { goals: v })} />
+                <MiniField label="⏰ Tarde (min)" value={stat.minutesLate} onChange={(v) => update(player.id, { minutesLate: v })} />
                 <MiniField
                   label="Nota"
                   value={stat.rating}
@@ -147,6 +162,15 @@ export function MatchStatsForm({
                 />
                 🧤 Jugó de arquero
               </label>
+              {stat.isGoalkeeper && (
+                <div className="mt-2 w-1/3">
+                  <MiniField
+                    label="🥅 En contra"
+                    value={stat.goalsAgainst}
+                    onChange={(v) => update(player.id, { goalsAgainst: v })}
+                  />
+                </div>
+              )}
             </div>
           );
         })}
@@ -154,18 +178,14 @@ export function MatchStatsForm({
 
       {/* Tabla — desde tablet */}
       <div className="hidden overflow-x-auto rounded-2xl border border-line sm:block">
-        <table className="w-full min-w-[820px] border-collapse text-left">
+        <table className="w-full min-w-[560px] border-collapse text-left">
           <thead>
             <tr className="border-b border-line bg-white/5 font-hud text-[10px] uppercase tracking-wider text-ink-faint">
               <th className="px-3 py-2">Jugador</th>
-              <th className="px-2 py-2 text-center">⚽</th>
-              <th className="px-2 py-2 text-center">🅰️</th>
-              <th className="px-2 py-2 text-center">🟨</th>
-              <th className="px-2 py-2 text-center">🟥</th>
-              <th className="px-2 py-2 text-center">Ataj</th>
-              <th className="px-2 py-2 text-center">Err</th>
-              <th className="px-2 py-2 text-center">Tarde</th>
-              <th className="px-2 py-2 text-center">🧤</th>
+              <th className="px-2 py-2 text-center">⚽ Goles</th>
+              <th className="px-2 py-2 text-center">⏰ Tarde</th>
+              <th className="px-2 py-2 text-center">🧤 Arq</th>
+              <th className="px-2 py-2 text-center">🥅 En contra</th>
               <th className="px-2 py-2 text-center">Nota</th>
               <th className="px-2 py-2 text-center">⭐ MVP</th>
             </tr>
@@ -182,15 +202,6 @@ export function MatchStatsForm({
                     </div>
                   </td>
                   <NumCell value={stat.goals} onChange={(v) => update(player.id, { goals: v })} />
-                  <NumCell value={stat.assists} onChange={(v) => update(player.id, { assists: v })} />
-                  <NumCell value={stat.yellowCards} max={2} onChange={(v) => update(player.id, { yellowCards: v })} />
-                  <NumCell value={stat.redCards} max={1} onChange={(v) => update(player.id, { redCards: v })} />
-                  <NumCell
-                    value={stat.saves}
-                    onChange={(v) => update(player.id, { saves: v })}
-                    disabled={!stat.isGoalkeeper}
-                  />
-                  <NumCell value={stat.errors} onChange={(v) => update(player.id, { errors: v })} />
                   <NumCell value={stat.minutesLate} onChange={(v) => update(player.id, { minutesLate: v })} />
                   <td className="px-2 py-2 text-center">
                     <input
@@ -200,6 +211,11 @@ export function MatchStatsForm({
                       className="h-4 w-4 accent-cyan"
                     />
                   </td>
+                  <NumCell
+                    value={stat.goalsAgainst}
+                    onChange={(v) => update(player.id, { goalsAgainst: v })}
+                    disabled={!stat.isGoalkeeper}
+                  />
                   <td className="px-2 py-2">
                     <input
                       type="number"
@@ -244,18 +260,27 @@ export function MatchStatsForm({
         />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <GlowButton variant="gold" onClick={handleSave} disabled={saving} className="flex items-center gap-2">
           <Save size={16} /> {saving ? "Guardando…" : "Guardar resultado"}
         </GlowButton>
         {saved && (
-          <motion.span
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="font-hud text-sm text-emerald"
-          >
-            ✓ Estadísticas guardadas
-          </motion.span>
+          <>
+            <motion.span
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="font-hud text-sm text-emerald"
+            >
+              ✓ Guardado
+            </motion.span>
+            <GlowButton
+              variant="cyan"
+              onClick={() => window.open(whatsappLink(shareMessage()), "_blank")}
+              className="flex items-center gap-2"
+            >
+              <Share2 size={16} /> Compartir por WhatsApp
+            </GlowButton>
+          </>
         )}
       </div>
     </div>

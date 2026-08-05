@@ -60,6 +60,8 @@ export interface PlayerMatchStat {
   redCards: number;
   saves: number;
   errors: number;
+  /** Goles recibidos mientras jugó de arquero. Solo se carga si isGoalkeeper. */
+  goalsAgainst: number;
   rating: number; // 1-10
   isMvp: boolean;
   isGoalkeeper: boolean;
