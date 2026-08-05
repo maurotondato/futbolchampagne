@@ -27,10 +27,14 @@ jobs:
 
       - run: npm ci
 
+      - name: Write build id
+        run: echo -n "${{ github.sha }}" > public/build-id.txt
+
       - name: Build static export
         run: npm run build
         env:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+          NEXT_PUBLIC_BUILD_ID: ${{ github.sha }}
 
       - uses: actions/configure-pages@v5
         with:

@@ -76,6 +76,7 @@ create table if not exists player_match_stats (
   red_cards int not null default 0,
   saves int not null default 0,
   errors int not null default 0,
+  goals_against int not null default 0,
   rating numeric(3,1) not null default 6.0 check (rating >= 1 and rating <= 10),
   is_mvp boolean not null default false,
   is_goalkeeper boolean not null default false,

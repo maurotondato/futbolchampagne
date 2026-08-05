@@ -4,6 +4,7 @@ import "./globals.css";
 import { SoundProvider } from "@/components/ui/SoundProvider";
 import { PasswordGate } from "@/components/auth/PasswordGate";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { VersionGuard } from "@/components/VersionGuard";
 
 const bebas = Bebas_Neue({
   variable: "--font-bebas",
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-void text-ink">
         <ErrorBoundary>
+          <VersionGuard />
           <SoundProvider>
             <PasswordGate>{children}</PasswordGate>
           </SoundProvider>
