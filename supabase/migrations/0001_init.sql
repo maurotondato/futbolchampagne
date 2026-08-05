@@ -208,7 +208,7 @@ insert into players (name, favorite_position, phone, photo_url) values
   ('Matias Yornet', 'MED', '2223505173', '/players/matias-yornet.jpg'),
   ('Mario Llanos', 'DEF', '2223425586', null),
   ('Santi Cupparo', 'DEL', '2223463681', '/players/santi-cupparo.jpg'),
-  ('Beto', 'DEF', '2223433889', null),
+  ('Beto', 'DEF', '2223433889', '/players/beto.jpg'),
   ('Toto Cardozo', 'MED', '2223490648', '/players/toto-cardozo.jpg'),
   ('Mauro Tondato', 'DEL', '2223431190', '/players/mauro-tondato.jpg')
 on conflict do nothing;

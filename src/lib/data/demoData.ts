@@ -31,7 +31,7 @@ export const DEMO_PLAYERS: Player[] = [
   { id: "p19", name: "Matias Yornet", phone: "2223505173", photoUrl: "/players/matias-yornet.jpg", dominantFoot: "derecha", favoritePosition: "MED", active: true, attributes: attrs() },
   { id: "p20", name: "Mario Llanos", phone: "2223425586", photoUrl: null, dominantFoot: "derecha", favoritePosition: "DEF", active: true, attributes: attrs() },
   { id: "p21", name: "Santi Cupparo", phone: "2223463681", photoUrl: "/players/santi-cupparo.jpg", dominantFoot: "derecha", favoritePosition: "DEL", active: true, attributes: attrs() },
-  { id: "p22", name: "Beto", phone: "2223433889", photoUrl: null, dominantFoot: "derecha", favoritePosition: "DEF", active: true, attributes: attrs() },
+  { id: "p22", name: "Beto", phone: "2223433889", photoUrl: "/players/beto.jpg", dominantFoot: "derecha", favoritePosition: "DEF", active: true, attributes: attrs() },
   { id: "p23", name: "Toto Cardozo", phone: "2223490648", photoUrl: "/players/toto-cardozo.jpg", dominantFoot: "derecha", favoritePosition: "MED", active: true, attributes: attrs() },
   { id: "p24", name: "Mauro Tondato", phone: "2223431190", photoUrl: "/players/mauro-tondato.jpg", dominantFoot: "derecha", favoritePosition: "DEL", active: true, attributes: attrs() },
 ];
