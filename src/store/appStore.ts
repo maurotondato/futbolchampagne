@@ -64,6 +64,16 @@ function repairLegacyState(matches: Match[]): Match[] {
   }));
 }
 
+// Backfills photos added to the seed roster after someone already had it
+// persisted locally (e.g. Beto's photo, added later — "p22" without a
+// photoUrl is unmistakably the pre-photo seed entry, not a real edit,
+// since nothing else sets that id).
+function repairLegacyPlayers(players: Player[]): Player[] {
+  return players.map((p) =>
+    p.id === "p22" && !p.photoUrl ? { ...p, photoUrl: "/players/beto.jpg" } : p
+  );
+}
+
 interface AppState {
   players: Player[];
   matches: Match[];
@@ -367,11 +377,14 @@ export const useAppStore = create<AppState>()(
     {
       name: "futbol-champagne-store",
       storage: createJSONStorage(() => safeStateStorage),
-      version: 3,
+      version: 4,
       migrate: (persisted) => {
         const state = persisted as Partial<AppState> | undefined;
         if (state?.matches) {
           state.matches = repairLegacyState(state.matches);
+        }
+        if (state?.players) {
+          state.players = repairLegacyPlayers(state.players);
         }
         return state;
       },
