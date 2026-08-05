@@ -35,6 +35,14 @@ export function slotByCode(code: SlotCode): FormationSlot {
   return found;
 }
 
+/** Lineup slots can come from data persisted by an older version of the app
+ * (e.g. the pre-formation x/y schema), so anything reading a stored `slot`
+ * value should check this before trusting it instead of assuming it's a
+ * current SlotCode. */
+export function isValidSlotCode(code: unknown): code is SlotCode {
+  return typeof code === "string" && FORMATION_SLOTS.some((s) => s.code === code);
+}
+
 export function slotCoords(code: SlotCode, team: "A" | "B") {
   const s = slotByCode(code);
   return { x: s.x, y: team === "A" ? s.y : mirrorY(s.y) };

@@ -4,7 +4,7 @@ import { cssGradientFor } from "@/components/ui/PlayerAvatar";
 import { initials } from "@/lib/utils";
 import { withBasePath } from "@/lib/basePath";
 import { GROUP_NAME } from "@/lib/data/demoData";
-import { slotCoords } from "@/lib/formation";
+import { isValidSlotCode, slotCoords } from "@/lib/formation";
 import type { LineupSlot, Match, Player } from "@/lib/data/types";
 
 const W = 1000;
@@ -135,7 +135,7 @@ function Token({
   player?: Player;
   color: string;
 }) {
-  if (!player) return null;
+  if (!player || !isValidSlotCode(slot.slot)) return null;
   const { x, y } = slotCoords(slot.slot, slot.team);
   return (
     <div

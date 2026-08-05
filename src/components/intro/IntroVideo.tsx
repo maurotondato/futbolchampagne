@@ -9,17 +9,23 @@ export function IntroVideo({ onDone }: { onDone: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasSource, setHasSource] = useState(true);
   const [muted, setMuted] = useState(true);
-  const [ready, setReady] = useState(false);
+  const doneRef = useRef(false);
+
+  function finish() {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onDone();
+  }
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const t = setTimeout(() => {
-      if (!ready) onDone();
-    }, 5000);
+    // Hard ceiling regardless of video state: some browsers (notably
+    // Safari under stricter autoplay policies) can fire "canplay" and then
+    // silently stall playback forever, so a fallback that only triggers
+    // while !ready is not enough — this one always fires.
+    const t = setTimeout(finish, 6000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready]);
+  }, []);
 
   if (!hasSource) return null;
 
@@ -36,11 +42,10 @@ export function IntroVideo({ onDone }: { onDone: () => void }) {
         muted={muted}
         playsInline
         className="h-full w-full object-cover"
-        onCanPlay={() => setReady(true)}
-        onEnded={onDone}
+        onEnded={finish}
         onError={() => {
           setHasSource(false);
-          onDone();
+          finish();
         }}
       >
         <source src={withBasePath("/video/intro.mp4")} type="video/mp4" />
@@ -57,7 +62,7 @@ export function IntroVideo({ onDone }: { onDone: () => void }) {
           {muted ? "Sonido" : "Silenciar"}
         </button>
         <button
-          onClick={onDone}
+          onClick={finish}
           className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-hud text-xs uppercase tracking-wider text-white backdrop-blur-md transition hover:bg-white/20"
         >
           Saltar intro
