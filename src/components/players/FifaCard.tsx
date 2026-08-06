@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Crest } from "@/components/ui/Crest";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { initials, cn } from "@/lib/utils";
 import { withBasePath } from "@/lib/basePath";
 import type { Player } from "@/lib/data/types";
@@ -74,7 +75,7 @@ export function FifaCard({
                 className="font-display text-4xl"
                 style={{ color: style.text, textShadow: `0 0 18px ${style.text}99` }}
               >
-                {ovr}
+                <AnimatedNumber value={ovr} duration={1.3} />
               </div>
               <div className="mt-1 font-hud text-xs font-bold tracking-wide" style={{ color: style.text }}>
                 {player.favoritePosition}
@@ -84,7 +85,17 @@ export function FifaCard({
                 {style.label}
               </div>
             </div>
-            <Crest size={40} />
+            <div className="flex flex-col items-center gap-1.5">
+              <Crest size={40} />
+              <span
+                className="text-xl leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+                title="Argentina"
+                role="img"
+                aria-label="Argentina"
+              >
+                🇦🇷
+              </span>
+            </div>
           </div>
 
           <div className="relative mx-auto mt-2 flex h-32 w-32 items-center justify-center">
@@ -128,7 +139,7 @@ export function FifaCard({
             {face.map((attr) => (
               <div key={attr.key} className="flex items-center justify-between">
                 <span className="font-hud text-sm font-bold" style={{ color: style.text }}>
-                  {attr.value}
+                  <AnimatedNumber value={attr.value} duration={1} />
                 </span>
                 <span className="font-hud text-[11px] uppercase tracking-wide text-white/70">
                   {attr.short}

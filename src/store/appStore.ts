@@ -4,11 +4,12 @@ import { create } from "zustand";
 import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 import { safeGet, safeSet, safeRemove } from "@/lib/safeStorage";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { DEMO_AWARDS, DEMO_MATCHES, DEMO_PLAYERS } from "@/lib/data/demoData";
+import { DEMO_AWARDS, DEMO_INJURIES, DEMO_MATCHES, DEMO_PLAYERS } from "@/lib/data/demoData";
 import { isValidSlotCode } from "@/lib/formation";
 import { nextMatchISODate } from "@/lib/matchDay";
 import type {
   Award,
+  Injury,
   LineupSlot,
   Match,
   MatchMedia,
@@ -17,6 +18,7 @@ import type {
 } from "@/lib/data/types";
 import {
   awardFromRow,
+  injuryFromRow,
   lineupFromRow,
   matchFromRow,
   matchToRow,
@@ -92,6 +94,7 @@ interface AppState {
   players: Player[];
   matches: Match[];
   awards: Award[];
+  injuries: Injury[];
   hydrated: boolean;
   isDemo: boolean;
   loadAll: () => Promise<void>;
@@ -115,6 +118,10 @@ interface AppState {
 
   addAward: (a: Omit<Award, "id">) => Promise<void>;
   deleteAward: (id: string) => Promise<void>;
+
+  addInjury: (i: Omit<Injury, "id">) => Promise<void>;
+  updateInjury: (id: string, patch: Partial<Injury>) => Promise<void>;
+  deleteInjury: (id: string) => Promise<void>;
 }
 
 export const useAppStore = create<AppState>()(
@@ -123,6 +130,7 @@ export const useAppStore = create<AppState>()(
       players: DEMO_PLAYERS,
       matches: DEMO_MATCHES,
       awards: DEMO_AWARDS,
+      injuries: DEMO_INJURIES,
       hydrated: false,
       isDemo: !isSupabaseConfigured,
 
@@ -133,7 +141,7 @@ export const useAppStore = create<AppState>()(
           return;
         }
         try {
-          const [{ data: playerRows }, { data: matchRows }, { data: lineupRows }, { data: statRows }, { data: mediaRows }, { data: awardRows }] =
+          const [{ data: playerRows }, { data: matchRows }, { data: lineupRows }, { data: statRows }, { data: mediaRows }, { data: awardRows }, { data: injuryRows }] =
             await Promise.all([
               sb.from("players").select("*").order("name"),
               sb.from("matches").select("*").order("date", { ascending: false }),
@@ -141,6 +149,7 @@ export const useAppStore = create<AppState>()(
               sb.from("player_match_stats").select("*"),
               sb.from("match_media").select("*"),
               sb.from("awards").select("*"),
+              sb.from("injuries").select("*"),
             ]);
 
           if (!playerRows || !matchRows) {
@@ -162,8 +171,9 @@ export const useAppStore = create<AppState>()(
             return matchFromRow(row, lineup, stats, media);
           });
           const awards = (awardRows ?? []).map(awardFromRow);
+          const injuries = (injuryRows ?? []).map(injuryFromRow);
 
-          set({ players, matches, awards, hydrated: true, isDemo: false });
+          set({ players, matches, awards, injuries, hydrated: true, isDemo: false });
         } catch {
           set({ hydrated: true, isDemo: true });
         }
@@ -413,6 +423,52 @@ export const useAppStore = create<AppState>()(
         }
         set({ awards: get().awards.filter((a) => a.id !== id) });
       },
+
+      addInjury: async (i) => {
+        const sb = getSupabaseBrowserClient();
+        let injury: Injury = { ...i, id: uid("inj") };
+        if (sb) {
+          const { data, error } = await sb
+            .from("injuries")
+            .insert({
+              player_id: i.playerId,
+              injury_name: i.injuryName,
+              start_date: i.startDate,
+              estimated_return_date: i.estimatedReturnDate,
+              notes: i.notes,
+            })
+            .select()
+            .single();
+          if (reportWriteError("agregar la lesión", error)) throw error;
+          if (data) injury = injuryFromRow(data);
+        }
+        set({ injuries: [...get().injuries, injury] });
+      },
+
+      updateInjury: async (id, patch) => {
+        const sb = getSupabaseBrowserClient();
+        if (sb) {
+          const row: Record<string, unknown> = {};
+          if (patch.injuryName !== undefined) row.injury_name = patch.injuryName;
+          if (patch.startDate !== undefined) row.start_date = patch.startDate;
+          if (patch.estimatedReturnDate !== undefined) row.estimated_return_date = patch.estimatedReturnDate;
+          if (patch.notes !== undefined) row.notes = patch.notes;
+          const { error } = await sb.from("injuries").update(row).eq("id", id);
+          if (reportWriteError("actualizar la lesión", error)) return;
+        }
+        set({
+          injuries: get().injuries.map((inj) => (inj.id === id ? { ...inj, ...patch } : inj)),
+        });
+      },
+
+      deleteInjury: async (id) => {
+        const sb = getSupabaseBrowserClient();
+        if (sb) {
+          const { error } = await sb.from("injuries").delete().eq("id", id);
+          if (reportWriteError("borrar la lesión", error)) return;
+        }
+        set({ injuries: get().injuries.filter((inj) => inj.id !== id) });
+      },
     }),
     {
       name: "futbol-champagne-store",
@@ -432,6 +488,7 @@ export const useAppStore = create<AppState>()(
         players: state.players,
         matches: state.matches,
         awards: state.awards,
+        injuries: state.injuries,
       }),
     }
   )

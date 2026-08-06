@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 interface Row {
   name: string;
@@ -41,7 +42,7 @@ export function GoalsBarChart({ data, label }: { data: Row[]; label: string }) {
             />
           </div>
           <span className="w-10 shrink-0 text-right font-hud text-sm font-bold text-ink">
-            {row.value}
+            <AnimatedNumber value={row.value} decimals={Number.isInteger(row.value) ? 0 : 2} duration={0.8} />
           </span>
         </div>
       ))}

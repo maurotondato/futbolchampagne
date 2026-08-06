@@ -1,4 +1,4 @@
-import type { Award, FunnyAttributes, Match, Player } from "./types";
+import type { Award, FunnyAttributes, Injury, Match, Player } from "./types";
 import { DEFAULT_ATTRIBUTES } from "./types";
 import { nextMatchISODate } from "@/lib/matchDay";
 
@@ -56,5 +56,7 @@ export const DEMO_MATCHES: Match[] = [
 ];
 
 export const DEMO_AWARDS: Award[] = [];
+
+export const DEMO_INJURIES: Injury[] = [];
 
 export const GROUP_NAME = "Fútbol Champagne de los Martes";

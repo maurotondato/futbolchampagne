@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 interface Row {
   name: string;
@@ -49,7 +50,9 @@ export function WdlChart({ data }: { data: Row[] }) {
                 <Segment value={row.Empates} max={max} color={WARNING} delay={i * 0.05 + 0.05} dark />
                 <Segment value={row.Derrotas} max={max} color={CRITICAL} delay={i * 0.05 + 0.1} />
               </div>
-              <span className="w-6 shrink-0 text-right font-hud text-xs text-ink-faint">{total}</span>
+              <span className="w-6 shrink-0 text-right font-hud text-xs text-ink-faint">
+                <AnimatedNumber value={total} duration={0.8} />
+              </span>
             </div>
           );
         })}

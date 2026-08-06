@@ -122,6 +122,17 @@ export interface Award {
   note?: string;
 }
 
+export interface Injury {
+  id: string;
+  playerId: string;
+  injuryName: string;
+  /** ISO date the injury was reported. */
+  startDate: string;
+  /** ISO date of estimated return — null if unknown. */
+  estimatedReturnDate?: string | null;
+  notes?: string;
+}
+
 export interface PlayerSummary {
   player: Player;
   played: number;
