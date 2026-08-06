@@ -7,7 +7,7 @@ export async function captureNodeToPng(node: HTMLElement, timeoutMs = 12000): Pr
   const { toPng } = await import("html-to-image");
 
   function capture() {
-    return toPng(node, { pixelRatio: 2.5, cacheBust: true });
+    return toPng(node, { pixelRatio: 3, cacheBust: true });
   }
 
   function withTimeout<T>(promise: Promise<T>): Promise<T> {

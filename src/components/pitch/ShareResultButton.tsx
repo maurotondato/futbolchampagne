@@ -139,6 +139,9 @@ export function ShareResultButton({
                       <Share2 size={16} /> WhatsApp
                     </GlowButton>
                   </div>
+                  <p className="mt-3 text-center font-hud text-[11px] leading-relaxed text-ink-faint">
+                    💡 Para que no se pixele: en WhatsApp mandala como <strong>Documento</strong> (📎 → Documento) en vez de Foto.
+                  </p>
                 </>
               )}
             </motion.div>
