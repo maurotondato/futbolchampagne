@@ -21,6 +21,10 @@ interface Row {
 const GOOD = "#0ca30c";
 const WARNING = "#fab219";
 const CRITICAL = "#d03b3b";
+// See GoalsBarChart.tsx — recharts measures label text via a canvas 2D
+// context, which can't resolve var(--font-hud); a literal stack avoids
+// labels silently disappearing on some browsers (notably iOS Safari).
+const CHART_FONT = "Rajdhani, ui-sans-serif, system-ui, sans-serif";
 
 export function WdlChart({ data }: { data: Row[] }) {
   if (data.length === 0) {
@@ -37,7 +41,7 @@ export function WdlChart({ data }: { data: Row[] }) {
         <CartesianGrid vertical={false} stroke="#2c2c2a" strokeDasharray="3 3" />
         <XAxis
           dataKey="name"
-          tick={{ fill: "#c3c2b7", fontFamily: "var(--font-hud)", fontSize: 11 }}
+          tick={{ fill: "#c3c2b7", fontFamily: CHART_FONT, fontSize: 11 }}
           axisLine={{ stroke: "#383835" }}
           tickLine={false}
           interval={0}
@@ -46,7 +50,7 @@ export function WdlChart({ data }: { data: Row[] }) {
           height={54}
         />
         <YAxis
-          tick={{ fill: "#898781", fontFamily: "var(--font-hud)", fontSize: 11 }}
+          tick={{ fill: "#898781", fontFamily: CHART_FONT, fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           allowDecimals={false}
@@ -57,13 +61,13 @@ export function WdlChart({ data }: { data: Row[] }) {
             background: "#0d1220",
             border: "1px solid rgba(255,255,255,0.12)",
             borderRadius: 10,
-            fontFamily: "var(--font-hud)",
+            fontFamily: CHART_FONT,
             fontSize: 12,
             color: "#eef1f8",
           }}
         />
         <Legend
-          wrapperStyle={{ fontFamily: "var(--font-hud)", fontSize: 12, color: "#c3c2b7" }}
+          wrapperStyle={{ fontFamily: CHART_FONT, fontSize: 12, color: "#c3c2b7" }}
         />
         <Bar dataKey="Victorias" stackId="r" fill={GOOD} radius={[0, 0, 0, 0]} maxBarSize={28} />
         <Bar dataKey="Empates" stackId="r" fill={WARNING} maxBarSize={28} />

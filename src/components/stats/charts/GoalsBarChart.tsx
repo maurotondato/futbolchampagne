@@ -17,6 +17,14 @@ interface Row {
 }
 
 const SERIES_BLUE = "#3987e5";
+// Recharts measures tick/label text via an off-DOM canvas 2D context to
+// decide layout and whether a label fits — canvas's `context.font` setter
+// can't resolve CSS custom properties (var(--font-hud)), and browsers
+// disagree on what happens when it's given one: some silently keep the
+// previous font (harmless), others end up with a broken measurement that
+// makes recharts hide the label entirely. A literal font stack sidesteps
+// the whole class of bug.
+const CHART_FONT = "Rajdhani, ui-sans-serif, system-ui, sans-serif";
 
 export function GoalsBarChart({ data, label }: { data: Row[]; label: string }) {
   if (data.length === 0) {
@@ -36,7 +44,7 @@ export function GoalsBarChart({ data, label }: { data: Row[]; label: string }) {
           type="category"
           dataKey="name"
           width={110}
-          tick={{ fill: "#c3c2b7", fontFamily: "var(--font-hud)", fontSize: 12 }}
+          tick={{ fill: "#c3c2b7", fontFamily: CHART_FONT, fontSize: 12 }}
           axisLine={{ stroke: "#383835" }}
           tickLine={false}
         />
@@ -46,7 +54,7 @@ export function GoalsBarChart({ data, label }: { data: Row[]; label: string }) {
             background: "#0d1220",
             border: "1px solid rgba(255,255,255,0.12)",
             borderRadius: 10,
-            fontFamily: "var(--font-hud)",
+            fontFamily: CHART_FONT,
             fontSize: 12,
             color: "#eef1f8",
           }}
@@ -58,7 +66,7 @@ export function GoalsBarChart({ data, label }: { data: Row[]; label: string }) {
             dataKey="value"
             position="right"
             fill="#eef1f8"
-            fontFamily="var(--font-hud)"
+            fontFamily={CHART_FONT}
             fontSize={12}
             fontWeight={700}
           />
