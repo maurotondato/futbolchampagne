@@ -30,6 +30,12 @@ export default function EstadisticasPage() {
     .slice(0, 8)
     .map((s) => ({ name: s.player.nickname || s.player.name.split(" ")[0], value: s.goals }));
 
+  const goalAvgRanking = summaries
+    .filter((s) => s.goals > 0 && s.played > 0)
+    .sort((a, b) => b.avgGoals - a.avgGoals)
+    .slice(0, 8)
+    .map((s) => ({ name: s.player.nickname || s.player.name.split(" ")[0], value: s.avgGoals }));
+
   const eloRanking = [...summaries]
     .filter((s) => s.played > 0)
     .sort((a, b) => b.elo - a.elo)
@@ -81,6 +87,13 @@ export default function EstadisticasPage() {
                 Goleadores
               </p>
               <GoalsBarChart data={topScorers} label="Goles" />
+            </GlassPanel>
+
+            <GlassPanel className="p-5">
+              <p className="mb-4 font-hud text-xs uppercase tracking-[0.25em] text-ink-faint">
+                Promedio de gol por partido
+              </p>
+              <GoalsBarChart data={goalAvgRanking} label="Goles por partido" />
             </GlassPanel>
 
             <GlassPanel className="p-5">

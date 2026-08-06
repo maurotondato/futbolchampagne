@@ -135,6 +135,8 @@ export interface PlayerSummary {
   mvps: number;
   cleanSheets: number;
   avgRating: number;
+  /** goals / played, 0 if the player hasn't played yet */
+  avgGoals: number;
   points: number;
   elo: number;
   winStreak: number;

@@ -53,6 +53,8 @@ export function ShareResultButton({
 
   async function handleNativeShare() {
     if (!imgUrl) return;
+    const comment = match.comments?.trim();
+    const summary = `${match.teamAName} ${match.teamAScore} - ${match.teamBScore} ${match.teamBName}`;
     try {
       const res = await fetch(imgUrl);
       const blob = await res.blob();
@@ -61,7 +63,7 @@ export function ShareResultButton({
         await navigator.share({
           files: [file],
           title: "Fútbol Champagne de los Martes",
-          text: `${match.teamAName} ${match.teamAScore} - ${match.teamBScore} ${match.teamBName}`,
+          text: comment ? `${summary}\n\n"${comment}"` : summary,
         });
         return;
       }
@@ -70,7 +72,7 @@ export function ShareResultButton({
     }
     window.open(
       whatsappLink(
-        `🍾⚽ ${match.teamAName} ${match.teamAScore} - ${match.teamBScore} ${match.teamBName}. Descargá la imagen y mandala al grupo`
+        `🍾⚽ ${summary}. Descargá la imagen y mandala al grupo${comment ? `\n\n"${comment}"` : ""}`
       ),
       "_blank"
     );

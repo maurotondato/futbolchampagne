@@ -248,6 +248,7 @@ function PlayerProfileContent() {
             </p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat label="Goles" value={summary?.goals ?? 0} />
+              <Stat label="Prom. gol x partido" value={(summary?.avgGoals ?? 0).toFixed(2)} />
               <Stat label="Asistencias" value={summary?.assists ?? 0} />
               <Stat label="MVP" value={summary?.mvps ?? 0} />
               <Stat label="Vallas invictas" value={summary?.cleanSheets ?? 0} />
@@ -303,7 +304,7 @@ function EditField({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-xl border border-line bg-white/5 p-3 text-center">
       <p className="font-display text-2xl text-gold">{value}</p>
