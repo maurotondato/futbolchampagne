@@ -171,7 +171,17 @@ function ResultToken({
     >
       <div style={{ position: "relative" }}>
         {isMvp && (
-          <div style={{ position: "absolute", top: -18, left: "50%", transform: "translateX(-50%)", fontSize: 22, zIndex: 2, filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.7))" }}>
+          <div
+            style={{
+              position: "absolute",
+              top: -26,
+              left: "50%",
+              transform: "translateX(-50%)",
+              fontSize: 30,
+              zIndex: 2,
+              filter: "drop-shadow(0 0 10px rgba(255,215,110,0.85)) drop-shadow(0 2px 3px rgba(0,0,0,0.7))",
+            }}
+          >
             👑
           </div>
         )}
@@ -204,20 +214,22 @@ function ResultToken({
             style={{
               position: "absolute",
               bottom: -2,
-              right: -6,
-              minWidth: 26,
-              height: 26,
-              padding: "0 6px",
-              borderRadius: 13,
+              right: -12,
+              minWidth: 34,
+              height: 32,
+              padding: "0 8px",
+              borderRadius: 16,
               background: "#0b0d14",
-              border: "2px solid #fff",
+              border: "3px solid #fff",
+              boxShadow: "0 3px 8px rgba(0,0,0,0.6)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontFamily: "var(--font-hud), sans-serif",
               fontWeight: 800,
-              fontSize: 12,
+              fontSize: 15,
               color: "#fff",
+              zIndex: 1,
             }}
           >
             ⚽{goals > 1 ? `x${goals}` : ""}
@@ -228,19 +240,21 @@ function ResultToken({
             style={{
               position: "absolute",
               bottom: -2,
-              left: -6,
-              minWidth: 30,
-              height: 22,
-              padding: "0 6px",
-              borderRadius: 11,
+              left: -12,
+              minWidth: 40,
+              height: 28,
+              padding: "0 8px",
+              borderRadius: 14,
               background: "#0b0d14",
-              border: `2px solid ${ratingColor(stat.rating)}`,
+              border: `3px solid ${ratingColor(stat.rating)}`,
+              boxShadow: "0 3px 8px rgba(0,0,0,0.6)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontFamily: "var(--font-display), sans-serif",
-              fontSize: 13,
+              fontSize: 17,
               color: ratingColor(stat.rating),
+              zIndex: 1,
             }}
           >
             {stat.rating.toFixed(1)}
