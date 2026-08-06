@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, X, ZoomIn } from "lucide-react";
 import { GlowButton } from "@/components/ui/GlowButton";
+import { Portal } from "@/components/ui/Portal";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 const VIEW_SIZE = 280;
 const OUTPUT_SIZE = 480;
@@ -42,6 +44,8 @@ export function PhotoCropper({
   useEffect(() => {
     return () => URL.revokeObjectURL(src);
   }, [src]);
+
+  useBodyScrollLock(true);
 
   const baseScale = natural.w && natural.h ? VIEW_SIZE / Math.min(natural.w, natural.h) : 1;
   const scale = baseScale * zoom;
@@ -103,6 +107,7 @@ export function PhotoCropper({
   }
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
       <div className="glass-strong w-full max-w-sm rounded-2xl border border-line p-5">
         <p className="mb-1 text-center font-hud text-sm uppercase tracking-wide text-ink">Ajustá la foto</p>
@@ -148,5 +153,6 @@ export function PhotoCropper({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }

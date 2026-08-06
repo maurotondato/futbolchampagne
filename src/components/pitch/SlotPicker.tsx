@@ -8,6 +8,7 @@ import type { Player, SlotCode } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
 import { slotByCode } from "@/lib/formation";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
+import { Portal } from "@/components/ui/Portal";
 
 function normalize(s: string) {
   return s
@@ -63,6 +64,7 @@ export function SlotPicker({
   }, [players, query, occupiedIds, currentPlayerId, slotDef.pos]);
 
   return (
+    <Portal>
     <AnimatePresence>
       {open && (
         <motion.div
@@ -152,5 +154,6 @@ export function SlotPicker({
         </motion.div>
       )}
     </AnimatePresence>
+    </Portal>
   );
 }

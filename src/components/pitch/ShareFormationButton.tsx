@@ -9,6 +9,7 @@ import type { Match, Player } from "@/lib/data/types";
 import { whatsappLink } from "@/lib/whatsapp";
 import { captureNodeToPng } from "@/lib/captureNode";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
+import { Portal } from "@/components/ui/Portal";
 
 export function ShareFormationButton({
   match,
@@ -86,6 +87,7 @@ export function ShareFormationButton({
         <ShareGraphic ref={nodeRef} match={match} players={players} />
       </div>
 
+      <Portal>
       <AnimatePresence>
         {open && (
           <motion.div
@@ -145,6 +147,7 @@ export function ShareFormationButton({
           </motion.div>
         )}
       </AnimatePresence>
+      </Portal>
     </>
   );
 }
