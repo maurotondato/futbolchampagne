@@ -19,6 +19,7 @@ import {
   Medal,
   Clapperboard,
   Mic,
+  Cross,
 } from "lucide-react";
 import { PanelCard } from "./PanelCard";
 import { Crest } from "@/components/ui/Crest";
@@ -45,6 +46,7 @@ const EXTRA_ITEMS = [
   { href: "/premios", icon: Medal, title: "Premios", subtitle: "Balón de Oro y más" },
   { href: "/momentos", icon: Clapperboard, title: "Momentos", subtitle: "Goles y papelones" },
   { href: "/previa", icon: Mic, title: "Previa", subtitle: "Simulá el partido" },
+  { href: "/enfermeria", icon: Cross, title: "Enfermería", subtitle: "Parte médico" },
 ];
 
 export function MainMenu() {

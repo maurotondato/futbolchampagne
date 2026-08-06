@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { cn } from "@/lib/utils";
 import type { Player } from "@/lib/data/types";
 
@@ -62,7 +63,9 @@ export function RankingList({
                 )}
               </div>
               <div className="relative text-right">
-                <span className="font-display text-2xl text-gold">{row.value}</span>
+                <span className="font-display text-2xl text-gold">
+                  <AnimatedNumber value={row.value} decimals={Number.isInteger(row.value) ? 0 : 2} duration={0.9} />
+                </span>
                 <p className="font-hud text-[9px] uppercase tracking-wide text-ink-faint">
                   {valueLabel}
                 </p>

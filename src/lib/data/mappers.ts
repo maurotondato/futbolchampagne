@@ -3,6 +3,7 @@ import type {
   AwardType,
   DominantFoot,
   FieldPosition,
+  Injury,
   LineupSlot,
   Match,
   MatchMedia,
@@ -169,5 +170,16 @@ export function awardFromRow(row: any): Award {
     playerId: row.player_id ?? undefined,
     playerIds: row.player_ids ?? undefined,
     note: row.note ?? undefined,
+  };
+}
+
+export function injuryFromRow(row: any): Injury {
+  return {
+    id: row.id,
+    playerId: row.player_id,
+    injuryName: row.injury_name,
+    startDate: row.start_date,
+    estimatedReturnDate: row.estimated_return_date ?? undefined,
+    notes: row.notes ?? undefined,
   };
 }

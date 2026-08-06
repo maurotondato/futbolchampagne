@@ -54,7 +54,7 @@ export default function EstadisticasPage() {
     }));
 
   const totalGoals = played.reduce((acc, m) => acc + (m.teamAScore ?? 0) + (m.teamBScore ?? 0), 0);
-  const avgGoalsPerMatch = played.length ? (totalGoals / played.length).toFixed(1) : "0";
+  const avgGoalsPerMatch = played.length ? totalGoals / played.length : 0;
   const bestStreak = Math.max(0, ...summaries.map((s) => s.winStreak));
   const worstStreak = Math.max(0, ...summaries.map((s) => s.loseStreak));
   const mostMinutes = [...summaries].sort((a, b) => b.minutesPlayed - a.minutesPlayed)[0];
@@ -75,8 +75,8 @@ export default function EstadisticasPage() {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <StatTile label="Partidos jugados" value={played.length} />
               <StatTile label="Goles totales" value={totalGoals} accent="cyan" />
-              <StatTile label="Prom. goles / partido" value={avgGoalsPerMatch} />
-              <StatTile label="Promedio de notas" value={avgRatingGlobal.toFixed(1)} accent="cyan" />
+              <StatTile label="Prom. goles / partido" value={avgGoalsPerMatch} decimals={1} />
+              <StatTile label="Promedio de notas" value={avgRatingGlobal} decimals={1} accent="cyan" />
               <StatTile label="Racha ganadora récord" value={bestStreak} suffix="W" />
               <StatTile label="Racha negativa récord" value={worstStreak} suffix="L" />
               <StatTile label="Más minutos" value={mostMinutes?.player.nickname || mostMinutes?.player.name.split(" ")[0] || "—"} />
