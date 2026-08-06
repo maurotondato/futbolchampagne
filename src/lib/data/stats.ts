@@ -148,6 +148,7 @@ export function computePlayerSummaries(
       mvps: b?.mvps ?? 0,
       cleanSheets: b?.cleanSheets ?? 0,
       avgRating: b ? Number(average(b.ratings).toFixed(2)) : 0,
+      avgGoals: b && b.played > 0 ? Number((b.goals / b.played).toFixed(2)) : 0,
       points: (b?.wins ?? 0) * 3 + (b?.draws ?? 0),
       elo: Math.round(elo.get(player.id) ?? STARTING_ELO),
       winStreak,
