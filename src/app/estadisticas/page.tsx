@@ -30,12 +30,6 @@ export default function EstadisticasPage() {
     .slice(0, 8)
     .map((s) => ({ name: s.player.nickname || s.player.name.split(" ")[0], value: s.goals }));
 
-  const topAssists = summaries
-    .filter((s) => s.assists > 0)
-    .sort((a, b) => b.assists - a.assists)
-    .slice(0, 8)
-    .map((s) => ({ name: s.player.nickname || s.player.name.split(" ")[0], value: s.assists }));
-
   const eloRanking = [...summaries]
     .filter((s) => s.played > 0)
     .sort((a, b) => b.elo - a.elo)
@@ -58,9 +52,6 @@ export default function EstadisticasPage() {
   const bestStreak = Math.max(0, ...summaries.map((s) => s.winStreak));
   const worstStreak = Math.max(0, ...summaries.map((s) => s.loseStreak));
   const mostMinutes = [...summaries].sort((a, b) => b.minutesPlayed - a.minutesPlayed)[0];
-  const mostCards = [...summaries].sort(
-    (a, b) => b.yellowCards + b.redCards * 2 - (a.yellowCards + a.redCards * 2)
-  )[0];
   const avgRatingGlobal = average(summaries.filter((s) => s.played > 0).map((s) => s.avgRating));
 
   return (
@@ -83,7 +74,6 @@ export default function EstadisticasPage() {
               <StatTile label="Racha ganadora récord" value={bestStreak} suffix="W" />
               <StatTile label="Racha negativa récord" value={worstStreak} suffix="L" />
               <StatTile label="Más minutos" value={mostMinutes?.player.nickname || mostMinutes?.player.name.split(" ")[0] || "—"} />
-              <StatTile label="Más tarjetas" value={mostCards?.player.nickname || mostCards?.player.name.split(" ")[0] || "—"} />
             </div>
 
             <GlassPanel className="p-5">
@@ -91,13 +81,6 @@ export default function EstadisticasPage() {
                 Goleadores
               </p>
               <GoalsBarChart data={topScorers} label="Goles" />
-            </GlassPanel>
-
-            <GlassPanel className="p-5">
-              <p className="mb-4 font-hud text-xs uppercase tracking-[0.25em] text-ink-faint">
-                Asistencias
-              </p>
-              <GoalsBarChart data={topAssists} label="Asistencias" />
             </GlassPanel>
 
             <GlassPanel className="p-5">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, Share2, X, Loader2 } from "lucide-react";
 import { GlowButton } from "@/components/ui/GlowButton";
@@ -21,6 +21,19 @@ export function ShareFormationButton({
   const [loading, setLoading] = useState(false);
   const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
+
+  useEffect(() => {
+    // Without locking body scroll, iOS Safari can leave this fixed-position
+    // modal rendered relative to a stale scroll offset if the page was
+    // scrolled down when it opened — it shows up off-screen (looks like it
+    // needs a scroll-to-top to appear, and the blurred backdrop looks stuck).
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
   async function handleShareClick() {
     setOpen(true);
@@ -75,7 +88,7 @@ export function ShareFormationButton({
   return (
     <>
       <GlowButton variant="gold" onClick={handleShareClick} className="flex items-center gap-2">
-        <Share2 size={16} /> Compartir
+        <Share2 size={16} /> Compartir y guardar
       </GlowButton>
 
       {/* Hidden full-resolution node used purely for capture */}

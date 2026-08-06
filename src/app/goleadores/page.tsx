@@ -22,7 +22,7 @@ export default function GoleadoresPage() {
       computePlayerSummaries(players, matches)
         .filter((s) => s.goals > 0)
         .sort((a, b) => b.goals - a.goals)
-        .map((s) => ({ player: s.player, value: s.goals, caption: `${s.assists} asistencias · ${s.played} PJ` })),
+        .map((s) => ({ player: s.player, value: s.goals, caption: `${s.played} PJ` })),
     [players, matches]
   );
 
