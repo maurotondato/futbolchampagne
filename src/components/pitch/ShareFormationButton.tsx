@@ -14,9 +14,13 @@ import { Portal } from "@/components/ui/Portal";
 export function ShareFormationButton({
   match,
   players,
+  onBeforeShare,
 }: {
   match: Match;
   players: Player[];
+  /** Runs (and is awaited) before the capture — used to persist a draft
+   * formation so "Compartir y guardar" actually saves it. */
+  onBeforeShare?: () => void | Promise<void>;
 }) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -32,6 +36,7 @@ export function ShareFormationButton({
     setError(false);
     setImgUrl(null);
     try {
+      await onBeforeShare?.();
       const node = nodeRef.current;
       if (!node) throw new Error("no node");
       const dataUrl = await captureNodeToPng(node);
@@ -141,6 +146,9 @@ export function ShareFormationButton({
                       <Share2 size={16} /> WhatsApp
                     </GlowButton>
                   </div>
+                  <p className="mt-3 text-center font-hud text-[11px] leading-relaxed text-ink-faint">
+                    💡 Para que no se pixele: en WhatsApp mandala como <strong>Documento</strong> (📎 → Documento) en vez de Foto.
+                  </p>
                 </>
               )}
             </motion.div>
