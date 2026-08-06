@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, Share2, X, Loader2 } from "lucide-react";
 import { GlowButton } from "@/components/ui/GlowButton";
@@ -8,6 +8,7 @@ import { ResultGraphic } from "./ResultGraphic";
 import type { Match, Player } from "@/lib/data/types";
 import { whatsappLink } from "@/lib/whatsapp";
 import { captureNodeToPng } from "@/lib/captureNode";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 export function ShareResultButton({
   match,
@@ -22,18 +23,7 @@ export function ShareResultButton({
   const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    // Without locking body scroll, iOS Safari can leave this fixed-position
-    // modal rendered relative to a stale scroll offset if the page was
-    // scrolled down when it opened — it shows up off-screen (looks like it
-    // needs a scroll-to-top to appear, and the blurred backdrop looks stuck).
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
+  useBodyScrollLock(open);
 
   async function handleShareClick() {
     setOpen(true);
