@@ -14,30 +14,39 @@ export function SoccerBall({
 }) {
   return (
     <motion.div
-      className={cn("relative", className)}
+      className={cn("relative flex items-center justify-center", className)}
       style={{ width: size, height: size }}
-      animate={spinning ? { rotate: 360 } : undefined}
-      transition={{ repeat: Infinity, duration: 1.6, ease: "linear" }}
+      animate={
+        spinning
+          ? { rotate: 360, y: [0, -size * 0.14, 0] }
+          : undefined
+      }
+      transition={
+        spinning
+          ? {
+              rotate: { repeat: Infinity, duration: 1.3, ease: "linear" },
+              y: { repeat: Infinity, duration: 0.65, ease: "easeInOut" },
+            }
+          : undefined
+      }
     >
-      <div
-        className="absolute inset-0 rounded-full"
+      <span
+        role="img"
+        aria-label="Pelota de fútbol"
         style={{
-          background:
-            "radial-gradient(circle at 32% 28%, #ffffff 0%, #e9ecf3 32%, #b7bfd1 62%, #6c7288 100%)",
-          boxShadow:
-            "inset -6px -8px 14px rgba(0,0,0,0.35), inset 4px 4px 10px rgba(255,255,255,0.6), 0 0 24px rgba(232,201,121,0.35)",
+          fontSize: size * 0.92,
+          lineHeight: 1,
+          display: "block",
+          filter:
+            "drop-shadow(0 0 18px rgba(232,201,121,0.45)) drop-shadow(0 6px 10px rgba(0,0,0,0.5))",
         }}
+      >
+        ⚽
+      </span>
+      <div
+        className="pointer-events-none absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-black/40 blur-sm"
+        style={{ width: size * 0.55, height: size * 0.12 }}
       />
-      <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full">
-        <polygon
-          points="50,30 62,39 57,53 43,53 38,39"
-          fill="#14171f"
-          opacity={0.88}
-        />
-        <polygon points="50,30 62,39 68,26 58,16 42,16 32,26 38,39" fill="none" stroke="#14171f" strokeWidth="2" opacity={0.55} />
-        <polygon points="57,53 68,60 66,75 50,80 43,53" fill="none" stroke="#14171f" strokeWidth="2" opacity={0.55} />
-        <polygon points="43,53 38,39 24,42 18,58 33,68" fill="none" stroke="#14171f" strokeWidth="2" opacity={0.55} />
-      </svg>
     </motion.div>
   );
 }

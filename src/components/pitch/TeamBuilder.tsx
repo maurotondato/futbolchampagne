@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Shuffle, Eraser, Pencil } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Shuffle, Eraser, Pencil, Save } from "lucide-react";
 import { Pitch } from "./Pitch";
 import { SlotCard } from "./SlotCard";
 import { SlotPicker } from "./SlotPicker";
@@ -11,9 +12,13 @@ import { GlassPanel } from "@/components/ui/GlassPanel";
 import { useAppStore, useHydrateStore } from "@/store/appStore";
 import { FORMATION_SLOTS, slotCoords } from "@/lib/formation";
 import { nextMatchISODate } from "@/lib/matchDay";
-import type { SlotCode } from "@/lib/data/types";
+import type { Match, SlotCode } from "@/lib/data/types";
+
+const DEFAULT_TEAM_A = "Equipo Rojo";
+const DEFAULT_TEAM_B = "Equipo Azul";
 
 export function TeamBuilder() {
+  const router = useRouter();
   const { loadAll, hydrated } = useHydrateStore();
   const players = useAppStore((s) => s.players);
   const matches = useAppStore((s) => s.matches);
@@ -25,7 +30,14 @@ export function TeamBuilder() {
 
   const [editingNames, setEditingNames] = useState(false);
   const [picker, setPicker] = useState<{ team: "A" | "B"; slot: SlotCode } | null>(null);
-  const creatingRef = useRef(false);
+  const [draftNames, setDraftNames] = useState({ a: DEFAULT_TEAM_A, b: DEFAULT_TEAM_B });
+  const [saved, setSaved] = useState(false);
+  // Nothing is persisted just from opening this screen — a match is only
+  // created (and shows up in historial) the moment the user actually does
+  // something: place a player, sortear, or rename a team. `ensureMatchRef`
+  // caches the in-flight/created promise so rapid actions before the first
+  // creation resolves don't race into creating two matches.
+  const ensureMatchRef = useRef<Promise<Match> | null>(null);
 
   useEffect(() => {
     loadAll();
@@ -35,26 +47,28 @@ export function TeamBuilder() {
     .filter((m) => m.status === "scheduled")
     .sort((a, b) => a.date.localeCompare(b.date))[0];
 
-  useEffect(() => {
-    if (!hydrated || match || creatingRef.current) return;
-    creatingRef.current = true;
-    addMatch({
-      date: nextMatchISODate(),
-      teamAName: "Equipo Rojo",
-      teamBName: "Equipo Azul",
-      teamAScore: null,
-      teamBScore: null,
-      status: "scheduled",
-    }).finally(() => {
-      creatingRef.current = false;
-    });
-  }, [hydrated, match, addMatch]);
+  function ensureMatch(): Promise<Match> {
+    if (match) return Promise.resolve(match);
+    if (!ensureMatchRef.current) {
+      ensureMatchRef.current = addMatch({
+        date: nextMatchISODate(),
+        teamAName: draftNames.a,
+        teamBName: draftNames.b,
+        teamAScore: null,
+        teamBScore: null,
+        status: "scheduled",
+      });
+    }
+    return ensureMatchRef.current;
+  }
 
   const byId = useMemo(() => new Map(players.map((p) => [p.id, p])), [players]);
   const activeCount = players.filter((p) => p.active).length;
   const placedCount = match?.lineup.length ?? 0;
+  const teamAName = match?.teamAName ?? draftNames.a;
+  const teamBName = match?.teamBName ?? draftNames.b;
 
-  if (!hydrated || !match) {
+  if (!hydrated) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center text-ink-dim font-hud uppercase tracking-widest">
         Cargando cancha…
@@ -62,9 +76,23 @@ export function TeamBuilder() {
     );
   }
 
-  function handleSortear() {
-    if (!match) return;
-    const matchId = match.id;
+  async function handleTeamNameChange(team: "A" | "B", value: string) {
+    if (!value.trim()) return;
+    setDraftNames((prev) => ({ ...prev, [team === "A" ? "a" : "b"]: value }));
+    if (match) {
+      updateMatch(match.id, team === "A" ? { teamAName: value } : { teamBName: value });
+    }
+  }
+
+  async function handleGuardar() {
+    await ensureMatch();
+    setSaved(true);
+    router.push("/historial");
+  }
+
+  async function handleSortear() {
+    const activeMatch = await ensureMatch();
+    const matchId = activeMatch.id;
     const pool = players.filter((p) => p.active).sort(() => Math.random() - 0.5);
 
     function assign(team: "A" | "B", pool: typeof players) {
@@ -98,7 +126,8 @@ export function TeamBuilder() {
     assign("B", pool.slice(7, 14));
   }
 
-  const occupiedIds = new Set(match.lineup.map((l) => l.playerId));
+  const lineup = match?.lineup ?? [];
+  const occupiedIds = new Set(lineup.map((l) => l.playerId));
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
@@ -107,14 +136,14 @@ export function TeamBuilder() {
           {editingNames ? (
             <div className="flex items-center gap-2">
               <input
-                defaultValue={match.teamAName}
-                onBlur={(e) => updateMatch(match.id, { teamAName: e.target.value })}
+                defaultValue={teamAName}
+                onBlur={(e) => handleTeamNameChange("A", e.target.value)}
                 className="w-32 rounded-lg border border-line bg-white/5 px-2 py-1 font-hud text-sm text-team-a outline-none focus:border-team-a/60"
               />
               <span className="text-ink-faint">vs</span>
               <input
-                defaultValue={match.teamBName}
-                onBlur={(e) => updateMatch(match.id, { teamBName: e.target.value })}
+                defaultValue={teamBName}
+                onBlur={(e) => handleTeamNameChange("B", e.target.value)}
                 className="w-32 rounded-lg border border-line bg-white/5 px-2 py-1 font-hud text-sm text-team-b outline-none focus:border-team-b/60"
               />
               <button onClick={() => setEditingNames(false)} className="text-xs text-ink-faint underline">
@@ -126,9 +155,9 @@ export function TeamBuilder() {
               onClick={() => setEditingNames(true)}
               className="flex items-center gap-2 font-hud text-sm uppercase tracking-wide text-ink-dim hover:text-ink"
             >
-              <span className="text-team-a">{match.teamAName}</span>
+              <span className="text-team-a">{teamAName}</span>
               <span className="text-ink-faint">vs</span>
-              <span className="text-team-b">{match.teamBName}</span>
+              <span className="text-team-b">{teamBName}</span>
               <Pencil size={13} className="opacity-50" />
             </button>
           )}
@@ -137,10 +166,15 @@ export function TeamBuilder() {
           <GlowButton variant="ghost" onClick={handleSortear} className="flex items-center gap-2">
             <Shuffle size={15} /> Sortear equipos
           </GlowButton>
-          <GlowButton variant="ghost" onClick={() => clearLineup(match.id)} className="flex items-center gap-2">
-            <Eraser size={15} /> Vaciar cancha
+          {match && (
+            <GlowButton variant="ghost" onClick={() => clearLineup(match.id)} className="flex items-center gap-2">
+              <Eraser size={15} /> Vaciar cancha
+            </GlowButton>
+          )}
+          <GlowButton variant="cyan" onClick={handleGuardar} className="flex items-center gap-2">
+            <Save size={15} /> {saved ? "Guardado ✓" : "Guardar"}
           </GlowButton>
-          <ShareFormationButton match={match} players={players} />
+          {match && <ShareFormationButton match={match} players={players} />}
         </div>
       </div>
 
@@ -154,7 +188,7 @@ export function TeamBuilder() {
         <Pitch>
           {(["A", "B"] as const).flatMap((team) =>
             FORMATION_SLOTS.map((slotDef) => {
-              const entry = match.lineup.find((l) => l.team === team && l.slot === slotDef.code);
+              const entry = lineup.find((l) => l.team === team && l.slot === slotDef.code);
               const player = entry ? byId.get(entry.playerId) : undefined;
               const { x, y } = slotCoords(slotDef.code, team);
               return (
@@ -182,14 +216,19 @@ export function TeamBuilder() {
           players={players}
           occupiedIds={occupiedIds}
           currentPlayerId={
-            match.lineup.find((l) => l.team === picker.team && l.slot === picker.slot)?.playerId
+            lineup.find((l) => l.team === picker.team && l.slot === picker.slot)?.playerId
           }
-          onSelect={(playerId) => {
-            setLineupSlot(match.id, { playerId, team: picker.team, slot: picker.slot });
+          onSelect={async (playerId) => {
+            const activeMatch = await ensureMatch();
+            setLineupSlot(activeMatch.id, { playerId, team: picker.team, slot: picker.slot });
             setPicker(null);
           }}
           onClear={() => {
-            const entry = match.lineup.find((l) => l.team === picker.team && l.slot === picker.slot);
+            if (!match) {
+              setPicker(null);
+              return;
+            }
+            const entry = lineup.find((l) => l.team === picker.team && l.slot === picker.slot);
             if (entry) removeLineupSlot(match.id, entry.playerId);
             setPicker(null);
           }}

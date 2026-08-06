@@ -9,7 +9,7 @@ import { generateInventedStats, type InventedMatchStats } from "@/lib/matchStats
 import type { LineupSlot, Match, Player, PlayerMatchStat } from "@/lib/data/types";
 
 const W = 1000;
-const H = 1680;
+const H = 1790;
 const RED = "#ef4444";
 const BLUE = "#3a7bff";
 const GOLD = "#ffd76a";
@@ -104,7 +104,7 @@ export const ResultGraphic = forwardRef<
         style={{
           position: "relative",
           margin: "0 56px",
-          height: 660,
+          height: 760,
           borderRadius: 24,
           overflow: "hidden",
           border: "1px solid rgba(255,255,255,0.12)",
@@ -223,6 +223,29 @@ function ResultToken({
             ⚽{goals > 1 ? `x${goals}` : ""}
           </div>
         )}
+        {stat && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: -2,
+              left: -6,
+              minWidth: 30,
+              height: 22,
+              padding: "0 6px",
+              borderRadius: 11,
+              background: "#0b0d14",
+              border: `2px solid ${ratingColor(stat.rating)}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: "var(--font-display), sans-serif",
+              fontSize: 13,
+              color: ratingColor(stat.rating),
+            }}
+          >
+            {stat.rating.toFixed(1)}
+          </div>
+        )}
       </div>
       <div
         style={{
@@ -242,20 +265,6 @@ function ResultToken({
       >
         {player.nickname || player.name.split(" ")[0]}
       </div>
-      {stat && (
-        <div
-          style={{
-            fontFamily: "var(--font-display), sans-serif",
-            fontSize: 14,
-            color: ratingColor(stat.rating),
-            background: "rgba(0,0,0,0.5)",
-            padding: "0px 9px",
-            borderRadius: 999,
-          }}
-        >
-          {stat.rating.toFixed(1)}
-        </div>
-      )}
     </div>
   );
 }
