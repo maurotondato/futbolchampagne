@@ -192,22 +192,30 @@ function ResultToken({
             borderRadius: "50%",
             border: `3px solid ${ringColor}`,
             boxShadow: `0 0 20px ${ringColor}66, 0 6px 14px rgba(0,0,0,0.5)`,
-            background: cssGradientFor(player.id),
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontFamily: "var(--font-display), sans-serif",
-            fontSize: 26,
-            color: "#fff",
-            overflow: "hidden",
           }}
         >
-          {player.photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={withBasePath(player.photoUrl)} alt="" crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            initials(player.name)
-          )}
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              background: cssGradientFor(player.id),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: "var(--font-display), sans-serif",
+              fontSize: 26,
+              color: "#fff",
+              overflow: "hidden",
+            }}
+          >
+            {player.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={withBasePath(player.photoUrl)} alt="" crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              initials(player.name)
+            )}
+          </div>
         </div>
         {goals > 0 && (
           <div
