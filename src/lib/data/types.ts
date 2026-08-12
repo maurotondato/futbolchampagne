@@ -157,6 +157,36 @@ export const DEFAULT_SERIOUS_ATTRIBUTES: SeriousAttributes = {
   regularidad: 70,
 };
 
+/** Campos de ficha configurables por grupo/DT, además de los fijos
+ * (nombre, apodo, foto, teléfono, fecha de nacimiento) que ya tiene todo
+ * jugador porque el resto de la app depende de ellos. Cada grupo arranca
+ * con DEFAULT_PLAYER_FIELDS y puede agregar, sacar o renombrar libremente. */
+export type PlayerFieldType = "text" | "number" | "date" | "boolean" | "select";
+
+export interface PlayerFieldDefinition {
+  id: string;
+  groupId: string;
+  key: string; // slug único dentro del grupo, ej. "direccion"
+  label: string;
+  type: PlayerFieldType;
+  options?: string[]; // solo para type: "select"
+  order: number;
+}
+
+export const DEFAULT_PLAYER_FIELDS: Omit<PlayerFieldDefinition, "id" | "groupId">[] = [
+  { key: "direccion", label: "Dirección", type: "text", order: 0 },
+  { key: "peso", label: "Peso (kg)", type: "number", order: 1 },
+  { key: "altura", label: "Altura (cm)", type: "number", order: 2 },
+  { key: "contactoEmergencia", label: "Contacto de emergencia", type: "text", order: 3 },
+  {
+    key: "grupoSanguineo",
+    label: "Grupo sanguíneo",
+    type: "select",
+    options: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+    order: 4,
+  },
+];
+
 export interface Player {
   id: string;
   name: string;
@@ -170,6 +200,8 @@ export interface Player {
   debutDate?: string | null;
   attributes: FunnyAttributes;
   active: boolean;
+  /** Valores de los campos configurables (PlayerFieldDefinition.key -> valor). */
+  customFields?: Record<string, string | number | boolean | null>;
 }
 
 export interface PlayerMatchStat {
@@ -301,4 +333,30 @@ export interface PlayerSummary {
   loseStreak: number;
   minutesPlayed: number;
   timesLate: number;
+}
+
+/** Sesión de entrenamiento (pensado para equipos que entrenan aparte de
+ * jugar el partido/torneo). El aviso al plantel se resuelve generando un
+ * mensaje de WhatsApp con estos datos, igual que el resto de la app — no
+ * hay notificaciones push hasta la fase de la app nativa. */
+export interface TrainingSession {
+  id: string;
+  groupId: string;
+  date: string; // ISO date
+  time?: string | null; // "19:30"
+  location?: string | null;
+  /** Qué se va a trabajar / de qué se trata la práctica. */
+  notes?: string | null;
+  /** Qué tienen que llevar (botines de campo, canilleras, etc.), opcional. */
+  bringItems?: string | null;
+}
+
+export type TrainingRsvpStatus = "va" | "no-va" | "sin-responder";
+
+export interface TrainingRsvp {
+  id: string;
+  trainingSessionId: string;
+  playerId: string;
+  status: TrainingRsvpStatus;
+  respondedAt?: string | null;
 }
