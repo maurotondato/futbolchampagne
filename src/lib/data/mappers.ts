@@ -3,6 +3,10 @@ import type {
   AwardType,
   DominantFoot,
   FieldPosition,
+  Group,
+  GroupMember,
+  GroupPlan,
+  GroupRole,
   Injury,
   LineupSlot,
   Match,
@@ -10,7 +14,10 @@ import type {
   MatchStatus,
   Player,
   PlayerMatchStat,
+  TeamFormat,
+  TeamTone,
 } from "./types";
+import { DEFAULT_FEATURES_BY_MODE, modeForFormat } from "./types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -181,5 +188,44 @@ export function injuryFromRow(row: any): Injury {
     startDate: row.start_date,
     estimatedReturnDate: row.estimated_return_date ?? undefined,
     notes: row.notes ?? undefined,
+  };
+}
+
+export function groupFromRow(row: any): Group {
+  const format = (row.format ?? "7-amistoso") as TeamFormat;
+  return {
+    id: row.id,
+    organizationId: row.organization_id ?? null,
+    name: row.name,
+    slug: row.slug,
+    crestUrl: row.crest_url ?? null,
+    format,
+    tone: (row.tone ?? "humor") as TeamTone,
+    plan: (row.plan ?? "free") as GroupPlan,
+    features: { ...DEFAULT_FEATURES_BY_MODE[modeForFormat(format)], ...(row.features ?? {}) },
+    createdAt: row.created_at,
+  };
+}
+
+export function groupToRow(g: Partial<Group>) {
+  const row: Record<string, unknown> = {};
+  if (g.organizationId !== undefined) row.organization_id = g.organizationId;
+  if (g.name !== undefined) row.name = g.name;
+  if (g.slug !== undefined) row.slug = g.slug;
+  if (g.crestUrl !== undefined) row.crest_url = g.crestUrl;
+  if (g.format !== undefined) row.format = g.format;
+  if (g.tone !== undefined) row.tone = g.tone;
+  if (g.plan !== undefined) row.plan = g.plan;
+  if (g.features !== undefined) row.features = g.features;
+  return row;
+}
+
+export function groupMemberFromRow(row: any): GroupMember {
+  return {
+    id: row.id,
+    groupId: row.group_id,
+    userId: row.user_id,
+    role: (row.role ?? "member") as GroupRole,
+    joinedAt: row.joined_at,
   };
 }
