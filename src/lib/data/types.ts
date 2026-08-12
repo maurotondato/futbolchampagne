@@ -31,16 +31,93 @@ export function modeForFormat(format: TeamFormat): TeamMode {
  * para equipos amateurs o profesionales que quieren una herramienta seria. */
 export type TeamTone = "humor" | "serio";
 
+/** Módulos opcionales de la app. Cada grupo elige cuáles quiere en el
+ * cuestionario de alta (con un preset según el modo) y los puede prender o
+ * apagar después desde Configuración — nada de esto es fijo. */
+export type FeatureKey =
+  | "enfermeria"
+  | "viaticos"
+  | "multas"
+  | "cuotas"
+  | "entrenamientos"
+  | "convocatoria"
+  | "camposPersonalizados"
+  | "sponsors"
+  | "multiEquipo"
+  | "tablaPosiciones"
+  | "calendarioUnificado"
+  | "reservaCancha";
+
+export const FEATURE_LABELS: Record<FeatureKey, string> = {
+  enfermeria: "Enfermería (lesionados y apto físico)",
+  viaticos: "Viáticos (gastos compartidos)",
+  multas: "Multas internas",
+  cuotas: "Cuotas de socio",
+  entrenamientos: "Entrenamientos",
+  convocatoria: "Convocatoria a partido",
+  camposPersonalizados: "Campos personalizados en la ficha",
+  sponsors: "Auspiciantes / sponsors",
+  multiEquipo: "Múltiples equipos/categorías bajo un mismo club",
+  tablaPosiciones: "Tabla de posiciones del torneo (carga manual)",
+  calendarioUnificado: "Calendario único (partidos + entrenamientos)",
+  reservaCancha: "Reserva de cancha",
+};
+
+export type GroupFeatures = Record<FeatureKey, boolean>;
+
+export const DEFAULT_FEATURES_BY_MODE: Record<TeamMode, GroupFeatures> = {
+  amigos: {
+    enfermeria: true,
+    viaticos: true,
+    multas: false,
+    cuotas: false,
+    entrenamientos: false,
+    convocatoria: false,
+    camposPersonalizados: false,
+    sponsors: false,
+    multiEquipo: false,
+    tablaPosiciones: false,
+    calendarioUnificado: false,
+    reservaCancha: false,
+  },
+  club: {
+    enfermeria: true,
+    viaticos: true,
+    multas: true,
+    cuotas: true,
+    entrenamientos: true,
+    convocatoria: true,
+    camposPersonalizados: true,
+    sponsors: true,
+    multiEquipo: false,
+    tablaPosiciones: true,
+    calendarioUnificado: true,
+    reservaCancha: true,
+  },
+};
+
 export type GroupPlan = "free" | "pro";
+
+/** Paraguas opcional para clubes con más de un equipo/categoría (primera,
+ * reserva, sub-15, femenino...). Cada categoría sigue siendo un Group
+ * independiente (su propio plantel, partidos, etc.) que referencia la
+ * misma Organization para compartir escudo, nombre de club y sponsors. */
+export interface Organization {
+  id: string;
+  name: string;
+  crestUrl?: string | null;
+}
 
 export interface Group {
   id: string;
+  organizationId?: string | null;
   name: string;
   slug: string;
   crestUrl?: string | null;
   format: TeamFormat;
   tone: TeamTone;
   plan: GroupPlan;
+  features: GroupFeatures;
   createdAt: string;
 }
 
@@ -54,23 +131,63 @@ export interface GroupMember {
   joinedAt: string;
 }
 
-export interface Coach {
+export type StaffRole = "dt" | "ayudante-de-campo" | "preparador-fisico" | "kinesiologo" | "otro";
+
+export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {
+  dt: "Director técnico",
+  "ayudante-de-campo": "Ayudante de campo",
+  "preparador-fisico": "Preparador físico",
+  kinesiologo: "Kinesiólogo/a",
+  otro: "Otro",
+};
+
+export interface StaffMember {
   id: string;
   groupId: string;
   name: string;
+  role: StaffRole;
   photoUrl?: string | null;
   notes?: string;
 }
+
+export type ExpenseCategory = "gasto" | "cancha";
 
 export interface Expense {
   id: string;
   groupId: string;
   description: string;
   amount: number;
+  category: ExpenseCategory;
   paidByPlayerId: string;
   date: string; // ISO date
   /** IDs de jugadores entre los que se divide el gasto. */
   splitAmong: string[];
+}
+
+/** Multas y cuotas de socio: a diferencia de Expense (uno paga y se
+ * divide entre varios), acá cada jugador le debe un monto fijo al grupo.
+ * "cuota" además lleva `period` (ej. "2026-08") para las mensualidades. */
+export type PlayerChargeType = "multa" | "cuota";
+
+export interface PlayerCharge {
+  id: string;
+  groupId: string;
+  playerId: string;
+  type: PlayerChargeType;
+  description: string;
+  amount: number;
+  period?: string | null;
+  date: string; // ISO date
+  paid: boolean;
+  paidDate?: string | null;
+}
+
+export interface Sponsor {
+  id: string;
+  groupId: string;
+  name: string;
+  logoUrl?: string | null;
+  linkUrl?: string | null;
 }
 
 /** Un pago puntual que salda (total o parcialmente) lo que un jugador le
@@ -202,6 +319,8 @@ export interface Player {
   active: boolean;
   /** Valores de los campos configurables (PlayerFieldDefinition.key -> valor). */
   customFields?: Record<string, string | number | boolean | null>;
+  /** ISO date de vencimiento del apto físico, si el grupo lleva ese control. */
+  fitnessCertExpiry?: string | null;
 }
 
 export interface PlayerMatchStat {
@@ -351,12 +470,19 @@ export interface TrainingSession {
   bringItems?: string | null;
 }
 
-export type TrainingRsvpStatus = "va" | "no-va" | "sin-responder";
+export type RsvpStatus = "va" | "no-va" | "sin-responder";
 
-export interface TrainingRsvp {
+/** Confirmación de asistencia, tanto para entrenamientos como para la
+ * convocatoria a un partido — mismo mecanismo, distinto `context`. */
+export type RsvpContext = "entrenamiento" | "partido";
+
+export interface Rsvp {
   id: string;
-  trainingSessionId: string;
+  groupId: string;
+  context: RsvpContext;
+  /** trainingSessionId o matchId según `context`. */
+  contextId: string;
   playerId: string;
-  status: TrainingRsvpStatus;
+  status: RsvpStatus;
   respondedAt?: string | null;
 }
