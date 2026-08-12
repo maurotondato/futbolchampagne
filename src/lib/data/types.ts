@@ -1,3 +1,73 @@
+/** Formato de equipo elegido al crear el grupo — determina tamaño de
+ * plantel, suplentes disponibles y la formación táctica disponible. */
+export type TeamFormat = "7-amistoso" | "7-torneo" | "11-torneo";
+
+export interface TeamFormatConfig {
+  id: TeamFormat;
+  label: string;
+  squadSize: number; // titulares en cancha por equipo
+  benchSize: number; // suplentes habilitados
+}
+
+export const TEAM_FORMATS: Record<TeamFormat, TeamFormatConfig> = {
+  "7-amistoso": { id: "7-amistoso", label: "Fútbol 7 · Amistoso entre amigos", squadSize: 7, benchSize: 3 },
+  "7-torneo": { id: "7-torneo", label: "Fútbol 7 · Torneo", squadSize: 7, benchSize: 5 },
+  "11-torneo": { id: "11-torneo", label: "Fútbol 11 · Torneo", squadSize: 11, benchSize: 7 },
+};
+
+export type GroupPlan = "free" | "pro";
+
+export interface Group {
+  id: string;
+  name: string;
+  slug: string;
+  crestUrl?: string | null;
+  format: TeamFormat;
+  plan: GroupPlan;
+  createdAt: string;
+}
+
+export type GroupRole = "admin" | "member";
+
+export interface GroupMember {
+  id: string;
+  groupId: string;
+  userId: string;
+  role: GroupRole;
+  joinedAt: string;
+}
+
+export interface Coach {
+  id: string;
+  groupId: string;
+  name: string;
+  photoUrl?: string | null;
+  notes?: string;
+}
+
+export interface Expense {
+  id: string;
+  groupId: string;
+  description: string;
+  amount: number;
+  paidByPlayerId: string;
+  date: string; // ISO date
+  /** IDs de jugadores entre los que se divide el gasto. */
+  splitAmong: string[];
+}
+
+/** Un pago puntual que salda (total o parcialmente) lo que un jugador le
+ * debe a otro por gastos compartidos. */
+export interface ExpenseSettlement {
+  id: string;
+  groupId: string;
+  fromPlayerId: string;
+  toPlayerId: string;
+  amount: number;
+  date: string; // ISO date
+  note?: string;
+}
+
 export type DominantFoot = "izquierda" | "derecha" | "ambidiestro";
 
 export type FieldPosition = "ARQ" | "DEF" | "MED" | "DEL";
