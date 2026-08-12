@@ -9,11 +9,27 @@ export interface TeamFormatConfig {
   benchSize: number; // suplentes habilitados
 }
 
-export const TEAM_FORMATS: Record<TeamFormat, TeamFormatConfig> = {
-  "7-amistoso": { id: "7-amistoso", label: "Fútbol 7 · Amistoso entre amigos", squadSize: 7, benchSize: 3 },
-  "7-torneo": { id: "7-torneo", label: "Fútbol 7 · Torneo", squadSize: 7, benchSize: 5 },
-  "11-torneo": { id: "11-torneo", label: "Fútbol 11 · Torneo", squadSize: 11, benchSize: 7 },
+/** "amigos": el grupo arma y controla los dos equipos de cada partido
+ * (como la app hoy). "club": el grupo controla un solo plantel propio y
+ * juega contra rivales externos (torneo/equipo amateur o profesional). El
+ * modo se deriva del formato, no se pregunta por separado. */
+export type TeamMode = "amigos" | "club";
+
+export const TEAM_FORMATS: Record<TeamFormat, TeamFormatConfig & { mode: TeamMode }> = {
+  "7-amistoso": { id: "7-amistoso", label: "Fútbol 7 · Amistoso entre amigos", squadSize: 7, benchSize: 3, mode: "amigos" },
+  "7-torneo": { id: "7-torneo", label: "Fútbol 7 · Torneo", squadSize: 7, benchSize: 5, mode: "club" },
+  "11-torneo": { id: "11-torneo", label: "Fútbol 11 · Torneo", squadSize: 11, benchSize: 7, mode: "club" },
 };
+
+export function modeForFormat(format: TeamFormat): TeamMode {
+  return TEAM_FORMATS[format].mode;
+}
+
+/** "humor": atributos y contenido en joda (como la app hoy: Cargadas,
+ * premios tipo "más termo", atributos como Humo o Garra). "serio":
+ * atributos reales de fútbol, sin Cargadas ni premios en joda — pensado
+ * para equipos amateurs o profesionales que quieren una herramienta seria. */
+export type TeamTone = "humor" | "serio";
 
 export type GroupPlan = "free" | "pro";
 
@@ -23,6 +39,7 @@ export interface Group {
   slug: string;
   crestUrl?: string | null;
   format: TeamFormat;
+  tone: TeamTone;
   plan: GroupPlan;
   createdAt: string;
 }
@@ -106,6 +123,40 @@ export const DEFAULT_ATTRIBUTES: FunnyAttributes = {
   sangre: 60,
 };
 
+/** Atributos reales de fútbol, para grupos con tono "serio" (equipos
+ * amateurs/profesionales que no quieren la joda de FunnyAttributes). Misma
+ * escala 0-99 y misma cantidad de campos, para que el cálculo de OVR y el
+ * resto de la ficha funcionen igual sin importar el tono del grupo. */
+export interface SeriousAttributes {
+  velocidad: number;
+  resistencia: number;
+  tecnica: number;
+  definicion: number;
+  pase: number;
+  vision: number;
+  marca: number;
+  fisico: number;
+  cabeceo: number;
+  atajada: number;
+  liderazgo: number;
+  regularidad: number;
+}
+
+export const DEFAULT_SERIOUS_ATTRIBUTES: SeriousAttributes = {
+  velocidad: 70,
+  resistencia: 70,
+  tecnica: 68,
+  definicion: 65,
+  pase: 68,
+  vision: 65,
+  marca: 65,
+  fisico: 70,
+  cabeceo: 60,
+  atajada: 50,
+  liderazgo: 60,
+  regularidad: 70,
+};
+
 export interface Player {
   id: string;
   name: string;
@@ -168,6 +219,32 @@ export interface Match {
   lineup: LineupSlot[];
   stats: PlayerMatchStat[];
   media: MatchMedia[];
+  /** Solo en modo "club": nombre del rival externo (sin plantel cargado en
+   * la app) y a qué temporada/torneo pertenece el partido, para agrupar el
+   * resumen de campaña. En modo "amigos" quedan sin usar. */
+  rivalName?: string | null;
+  isHome?: boolean | null;
+  season?: string | null;
+}
+
+/** Fila de la tabla de posiciones general de un torneo, cargada a mano por
+ * el usuario (la app no tiene forma de conocer los resultados de los
+ * partidos entre otros equipos, así que no se calcula sola). */
+export interface LeagueStandingRow {
+  id: string;
+  groupId: string;
+  season: string;
+  teamName: string;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  points: number;
+  /** Orden manual en la tabla (posición), por si el usuario quiere fijarlo
+   * en vez de que se ordene solo por puntos. */
+  position?: number | null;
 }
 
 export type AwardType =
