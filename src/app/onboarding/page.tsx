@@ -37,6 +37,8 @@ export default function OnboardingPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createdInviteCode, setCreatedInviteCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -115,10 +117,50 @@ export default function OnboardingPage() {
         await sb?.from("groups").update({ features }).eq("id", group.id);
       }
 
-      router.push("/");
+      setCreatedInviteCode(group.inviteCode);
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (createdInviteCode) {
+    return (
+      <PageShell>
+        <div className="flex min-h-dvh items-center justify-center px-4">
+          <GlassPanel strong className="w-full max-w-sm rounded-2xl border border-line p-8 text-center">
+            <p className="font-display text-2xl uppercase tracking-wide text-gold-gradient">
+              ¡Equipo creado!
+            </p>
+            <p className="mt-2 font-hud text-xs text-ink-faint">
+              Pasale este código al resto del plantel para que se sumen desde /join
+            </p>
+            <div className="mt-4 rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 font-hud text-lg uppercase tracking-[0.3em] text-gold">
+              {createdInviteCode}
+            </div>
+            <button
+              type="button"
+              onClick={async () => {
+                await navigator.clipboard.writeText(createdInviteCode);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+              }}
+              className="mt-3 font-hud text-xs uppercase tracking-wide text-ink-faint underline-offset-2 hover:text-gold hover:underline"
+            >
+              {copied ? "¡Copiado!" : "Copiar código"}
+            </button>
+            <motion.button
+              type="button"
+              onClick={() => router.push("/")}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              className="mt-5 w-full rounded-xl bg-gradient-to-b from-[#ffe9a8] via-[#e8c979] to-[#a8863f] py-3 font-hud text-sm font-bold uppercase tracking-wide text-[#241a08] shadow-[0_0_25px_rgba(232,201,121,0.35)]"
+            >
+              Entrar a la app ⚽
+            </motion.button>
+          </GlassPanel>
+        </div>
+      </PageShell>
+    );
   }
 
   if (checking) {
@@ -141,6 +183,13 @@ export default function OnboardingPage() {
           <p className="mt-1 font-hud text-xs uppercase tracking-[0.2em] text-ink-faint">
             Cuatro preguntas y arrancás
           </p>
+          <button
+            type="button"
+            onClick={() => router.push("/join")}
+            className="mt-3 font-hud text-xs uppercase tracking-wide text-ink-faint underline-offset-2 hover:text-gold hover:underline"
+          >
+            ¿Ya tenés un código de invitación? Sumate a un equipo existente
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

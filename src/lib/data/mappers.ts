@@ -198,6 +198,7 @@ export function groupFromRow(row: any): Group {
     organizationId: row.organization_id ?? null,
     name: row.name,
     slug: row.slug,
+    inviteCode: row.invite_code,
     crestUrl: row.crest_url ?? null,
     format,
     tone: (row.tone ?? "humor") as TeamTone,

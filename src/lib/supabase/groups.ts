@@ -63,6 +63,29 @@ export async function createGroup(params: {
   return { group: groupFromRow(groupRow) };
 }
 
+export async function joinGroupByInviteCode(
+  userId: string,
+  inviteCode: string
+): Promise<{ group?: Group; error?: string }> {
+  const sb = getSupabaseBrowserClient();
+  if (!sb) return { error: "Supabase no está configurado." };
+
+  const { data: groupRow, error: findError } = await sb
+    .from("groups")
+    .select()
+    .eq("invite_code", inviteCode.trim().toLowerCase())
+    .maybeSingle();
+  if (findError) return { error: findError.message };
+  if (!groupRow) return { error: "Ese código no corresponde a ningún equipo." };
+
+  const { error: memberError } = await sb
+    .from("group_members")
+    .insert({ group_id: groupRow.id, user_id: userId, role: "member" });
+  if (memberError) return { error: memberError.message };
+
+  return { group: groupFromRow(groupRow) };
+}
+
 export async function getGroupForUser(userId: string): Promise<Group | null> {
   const sb = getSupabaseBrowserClient();
   if (!sb) return null;
