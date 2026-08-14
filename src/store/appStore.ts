@@ -4,6 +4,8 @@ import { create } from "zustand";
 import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 import { safeGet, safeSet, safeRemove } from "@/lib/safeStorage";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { getCurrentUserId } from "@/lib/supabase/auth";
+import { getGroupForUser } from "@/lib/supabase/groups";
 import { DEMO_AWARDS, DEMO_INJURIES, DEMO_MATCHES, DEMO_PLAYERS } from "@/lib/data/demoData";
 import { isValidSlotCode } from "@/lib/formation";
 import { nextMatchISODate } from "@/lib/matchDay";
@@ -97,6 +99,10 @@ interface AppState {
   injuries: Injury[];
   hydrated: boolean;
   isDemo: boolean;
+  /** Grupo del usuario logueado, cuando la app corre en modo multi-cuenta.
+   * null en modo local/demo y también mientras el cutover del gate de
+   * contraseña compartida a login real no esté activado. */
+  currentGroupId: string | null;
   loadAll: () => Promise<void>;
 
   addPlayer: (p: Omit<Player, "id">) => Promise<Player>;
@@ -133,6 +139,7 @@ export const useAppStore = create<AppState>()(
       injuries: DEMO_INJURIES,
       hydrated: false,
       isDemo: !isSupabaseConfigured,
+      currentGroupId: null,
 
       loadAll: async () => {
         const sb = getSupabaseBrowserClient();
@@ -141,6 +148,14 @@ export const useAppStore = create<AppState>()(
           return;
         }
         try {
+          // Modo multi-cuenta: si hay una sesión real de Supabase Auth con
+          // un grupo asociado, RLS ya filtra todo lo de abajo a ese grupo
+          // solo. Sin sesión (todavía el gate viejo de "fulbito"), sigue
+          // siendo lectura pública sin filtrar, como hasta ahora.
+          const userId = await getCurrentUserId();
+          const group = userId ? await getGroupForUser(userId) : null;
+          set({ currentGroupId: group?.id ?? null });
+
           const [{ data: playerRows }, { data: matchRows }, { data: lineupRows }, { data: statRows }, { data: mediaRows }, { data: awardRows }, { data: injuryRows }] =
             await Promise.all([
               sb.from("players").select("*").order("name"),
@@ -183,9 +198,10 @@ export const useAppStore = create<AppState>()(
         const sb = getSupabaseBrowserClient();
         let player: Player = { ...p, id: uid("p") };
         if (sb) {
+          const groupId = get().currentGroupId;
           const { data, error } = await sb
             .from("players")
-            .insert(playerToRow(p))
+            .insert({ ...playerToRow(p), ...(groupId ? { group_id: groupId } : {}) })
             .select()
             .single();
           if (reportWriteError("agregar el jugador", error)) throw error;
@@ -219,9 +235,10 @@ export const useAppStore = create<AppState>()(
         const sb = getSupabaseBrowserClient();
         let match: Match = { ...m, id: uid("m"), lineup: [], stats: [], media: [] };
         if (sb) {
+          const groupId = get().currentGroupId;
           const { data, error } = await sb
             .from("matches")
-            .insert(matchToRow(m))
+            .insert({ ...matchToRow(m), ...(groupId ? { group_id: groupId } : {}) })
             .select()
             .single();
           if (reportWriteError("crear el partido", error)) throw error;
@@ -398,6 +415,7 @@ export const useAppStore = create<AppState>()(
         const sb = getSupabaseBrowserClient();
         let award: Award = { ...a, id: uid("aw") };
         if (sb) {
+          const groupId = get().currentGroupId;
           const { data, error } = await sb
             .from("awards")
             .insert({
@@ -406,6 +424,7 @@ export const useAppStore = create<AppState>()(
               player_id: a.playerId,
               player_ids: a.playerIds,
               note: a.note,
+              ...(groupId ? { group_id: groupId } : {}),
             })
             .select()
             .single();
@@ -428,6 +447,7 @@ export const useAppStore = create<AppState>()(
         const sb = getSupabaseBrowserClient();
         let injury: Injury = { ...i, id: uid("inj") };
         if (sb) {
+          const groupId = get().currentGroupId;
           const { data, error } = await sb
             .from("injuries")
             .insert({
@@ -436,6 +456,7 @@ export const useAppStore = create<AppState>()(
               start_date: i.startDate,
               estimated_return_date: i.estimatedReturnDate,
               notes: i.notes,
+              ...(groupId ? { group_id: groupId } : {}),
             })
             .select()
             .single();

@@ -113,6 +113,9 @@ export interface Group {
   organizationId?: string | null;
   name: string;
   slug: string;
+  /** Código corto para que el resto del plantel se sume al grupo sin que
+   * un admin los tenga que dar de alta a mano uno por uno. */
+  inviteCode: string;
   crestUrl?: string | null;
   format: TeamFormat;
   tone: TeamTone;
