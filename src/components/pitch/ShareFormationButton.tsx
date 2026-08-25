@@ -8,6 +8,7 @@ import { ShareGraphic } from "./ShareGraphic";
 import type { Match, Player } from "@/lib/data/types";
 import { whatsappLink } from "@/lib/whatsapp";
 import { captureNodeToPng } from "@/lib/captureNode";
+import { saveImage } from "@/lib/saveImage";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { Portal } from "@/components/ui/Portal";
 
@@ -50,10 +51,7 @@ export function ShareFormationButton({
 
   async function handleDownload() {
     if (!imgUrl) return;
-    const a = document.createElement("a");
-    a.href = imgUrl;
-    a.download = `futbol-champagne-${match.date}.png`;
-    a.click();
+    await saveImage(imgUrl, `futbol-champagne-${match.date}.png`);
   }
 
   async function handleNativeShare() {

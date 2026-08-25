@@ -8,6 +8,7 @@ import { ResultGraphic } from "./ResultGraphic";
 import type { Match, Player } from "@/lib/data/types";
 import { whatsappLink } from "@/lib/whatsapp";
 import { captureNodeToPng } from "@/lib/captureNode";
+import { saveImage } from "@/lib/saveImage";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { Portal } from "@/components/ui/Portal";
 
@@ -45,10 +46,7 @@ export function ShareResultButton({
 
   async function handleDownload() {
     if (!imgUrl) return;
-    const a = document.createElement("a");
-    a.href = imgUrl;
-    a.download = `futbol-champagne-resultado-${match.date}.png`;
-    a.click();
+    await saveImage(imgUrl, `futbol-champagne-resultado-${match.date}.png`);
   }
 
   async function handleNativeShare() {
